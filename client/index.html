@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FanVault</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="overlay-bar" aria-label="Overlay navigation">
+      <button class="overlay-btn is-active" data-action="toggle-chat">Chat</button>
+      <button class="overlay-btn" data-action="open-voice">Voice</button>
+      <button class="overlay-btn" data-action="open-members">Members</button>
+      <button class="overlay-btn" data-action="open-menu">Menu</button>
+    </header>
+
+    <main class="workspace">
+      <section class="chat-dock" id="chatDock">
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div>
+              <h1>Guild Chat</h1>
+              <p>Lobby</p>
+            </div>
+            <div class="channel-tabs">
+              <button class="channel-tab is-active">Lobby</button>
+              <button class="channel-tab">Ingame</button>
+              <button class="channel-tab">Tutorials</button>
+              <button class="channel-tab">Guild News</button>
+            </div>
+          </div>
+
+          <div class="messages" id="messages">
+            <article class="message system-message">
+              <span class="message-meta">System</span>
+              <p>FanVault connected. Press Ctrl + Shift + F to hide or show the client.</p>
+            </article>
+            <article class="message">
+              <span class="message-meta">RangerOne · 16:05</span>
+              <p>Anyone up for Daily Ops later?</p>
+            </article>
+            <article class="message">
+              <span class="message-meta">AshMara · 16:06</span>
+              <p>I can join after this event run.</p>
+            </article>
+          </div>
+
+          <div class="composer-toolbar">
+            <button id="emojiBtn" class="icon-btn" title="Emoji">☺</button>
+            <label class="icon-btn upload-btn" title="Upload image">
+              +
+              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+            </label>
+            <span class="toolbar-note" id="uploadNote">Images, emojis and links supported</span>
+          </div>
+
+          <div class="composer">
+            <input id="msg" type="text" placeholder="Write a message..." autocomplete="off" />
+            <button id="sendBtn" class="send-btn">Send</button>
+          </div>
+
+          <div class="emoji-picker hidden" id="emojiPicker"></div>
+        </div>
+
+        <aside class="member-strip" aria-label="Online members">
+          <button class="member-avatar status-online" data-name="RangerOne" data-state="Online" data-voice="In voice">
+            <span>R</span>
+          </button>
+          <button class="member-avatar status-idle" data-name="AshMara" data-state="Idle" data-voice="Lobby">
+            <span>A</span>
+          </button>
+          <button class="member-avatar status-online" data-name="MothSix" data-state="Online" data-voice="Squad 2">
+            <span>M</span>
+          </button>
+          <button class="member-avatar status-offline" data-name="HollowFox" data-state="Offline" data-voice="—">
+            <span>H</span>
+          </button>
+          <button class="member-avatar status-online" data-name="VaultAnne" data-state="Online" data-voice="Guild Lobby">
+            <span>V</span>
+          </button>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <div class="tooltip hidden" id="avatarTooltip"></div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop"></div>
+
+  <section class="modal hidden" id="profileModal" aria-label="Profile">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="profile-card">
+      <div class="profile-banner"></div>
+      <div class="profile-avatar">F</div>
+      <div class="profile-body">
+        <h2>FanVault User</h2>
+        <p class="profile-status">Ready for events, trade runs and calm voice sessions.</p>
+
+        <div class="profile-grid">
+          <div>
+            <span class="label">Playstyle</span>
+            <div class="tag-list">
+              <span class="tag">Events</span>
+              <span class="tag">Daily Ops</span>
+              <span class="tag">Trade</span>
+            </div>
+          </div>
+          <div>
+            <span class="label">Social Links</span>
+            <ul class="simple-links">
+              <li>Steam</li>
+              <li>Xbox</li>
+              <li>YouTube</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="voiceModal" aria-label="Voice chat">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="popup-card">
+      <h2>Voice</h2>
+      <div class="voice-block">
+        <div>
+          <h3>Guild Lobby</h3>
+          <p>Main room for the whole guild.</p>
+        </div>
+        <button class="small-btn">Join Lobby</button>
+      </div>
+
+      <div class="voice-block-column">
+        <div class="voice-block voice-header-line">
+          <div>
+            <h3>Squad Rooms</h3>
+            <p>Up to 5 rooms, max 4 players each.</p>
+          </div>
+          <button class="small-btn">Create Squad</button>
+        </div>
+        <div class="squad-list">
+          <div class="squad-item">
+            <span>Squad 1</span>
+            <span>2 / 4</span>
+          </div>
+          <div class="squad-item">
+            <span>Squad 2</span>
+            <span>4 / 4</span>
+          </div>
+          <div class="squad-item">
+            <span>Squad 3</span>
+            <span>1 / 4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="membersModal" aria-label="Members">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="popup-card">
+      <h2>Members</h2>
+      <div class="member-list">
+        <div class="member-row"><span>RangerOne</span><span class="member-state online">Online</span></div>
+        <div class="member-row"><span>AshMara</span><span class="member-state idle">Idle</span></div>
+        <div class="member-row"><span>MothSix</span><span class="member-state online">Online</span></div>
+        <div class="member-row"><span>HollowFox</span><span class="member-state offline">Offline</span></div>
+        <div class="member-row"><span>VaultAnne</span><span class="member-state online">Online</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="menuModal" aria-label="Menu">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="popup-card menu-card">
+      <h2>Menu</h2>
+      <div class="menu-actions">
+        <button class="menu-action" data-action="open-profile-from-menu">Profile</button>
+        <button class="menu-action" data-action="open-settings">Settings</button>
+        <button class="menu-action" data-action="open-members">Members</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="settingsModal" aria-label="Settings">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="popup-card">
+      <h2>Settings</h2>
+      <div class="settings-list">
+        <div class="setting-row"><span>Hotkey</span><strong>Ctrl + Shift + F</strong></div>
+        <div class="setting-row"><span>Theme</span><strong>Dark Flat</strong></div>
+        <div class="setting-row"><span>Server</span><strong>localhost:3001</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
