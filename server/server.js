@@ -8,44 +8,47 @@ app.use(cors());
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const clients = new Map();
 
-const clients = new Set();
-
-function broadcast(payload) {
-  const data = JSON.stringify(payload);
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(data);
-    }
-  });
+function sendJson(ws, payload) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(payload));
 }
 
 wss.on("connection", (ws) => {
-  clients.add(ws);
+  ws.userName = null;
+  ws.clientId = null;
 
   ws.on("message", (message) => {
     try {
       const payload = JSON.parse(String(message));
-      if (payload.type === "chat") {
-        broadcast({
-          type: "chat",
-          channel: payload.channel || "Lobby",
-          meta: payload.meta || "Guild · now",
-          text: payload.text || ""
-        });
+      if (payload.type === "register") {
+        ws.userName = payload.from || "VaultDweller";
+        ws.clientId = payload.clientId || null;
+        clients.set(ws.userName, ws);
         return;
       }
+      if (payload.type === "chat") {
+        wss.clients.forEach((client) => sendJson(client, payload));
+        return;
+      }
+      if (payload.type === "dm") {
+        sendJson(ws, payload);
+        const target = clients.get(payload.to);
+        if (target && target !== ws) sendJson(target, payload);
+      }
     } catch (error) {
-      broadcast({ type: "chat", channel: "Lobby", meta: "Guild · now", text: String(message) });
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) client.send(String(message));
+      });
     }
   });
 
   ws.on("close", () => {
-    clients.delete(ws);
+    if (ws.userName && clients.get(ws.userName) === ws) clients.delete(ws.userName);
   });
 });
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send("FanVault server running");
 });
 

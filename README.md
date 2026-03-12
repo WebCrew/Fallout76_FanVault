@@ -31,3 +31,10 @@ npm start
 ## Current focus
 This version is mainly for UI and chat-flow testing.
 Voice logic, moderation logic and full settings are still scaffold/demo level.
+
+
+## Step 1 Update
+- Avatar context menu
+- Direct Messages (private chat)
+- Squad invite action from avatar menu
+- .gitignore included

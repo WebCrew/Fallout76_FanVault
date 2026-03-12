@@ -21,30 +21,21 @@
           <div class="chat-header">
             <div>
               <h1>Guild Chat</h1>
-              <p>Lobby</p>
+              <p>General guild conversation.</p>
             </div>
-            <div class="channel-tabs">
+            <div class="channel-tabs" id="channelTabs">
               <button class="channel-tab is-active">Lobby</button>
               <button class="channel-tab">Ingame</button>
               <button class="channel-tab">Tutorials</button>
               <button class="channel-tab">Guild News</button>
             </div>
+            <div class="dm-row hidden" id="dmRowWrap">
+              <span class="dm-label">DMs</span>
+              <div class="dm-tabs" id="dmTabs"></div>
+            </div>
           </div>
 
-          <div class="messages" id="messages">
-            <article class="message system-message">
-              <span class="message-meta">System</span>
-              <p>FanVault connected. Press Ctrl + Shift + F to hide or show the client.</p>
-            </article>
-            <article class="message">
-              <span class="message-meta">RangerOne · 16:05</span>
-              <p>Anyone up for Daily Ops later?</p>
-            </article>
-            <article class="message">
-              <span class="message-meta">AshMara · 16:06</span>
-              <p>I can join after this event run.</p>
-            </article>
-          </div>
+          <div class="messages" id="messages"></div>
 
           <div class="composer-toolbar">
             <button id="emojiBtn" class="icon-btn" title="Emoji">☺</button>
@@ -61,22 +52,23 @@
           </div>
 
           <div class="emoji-picker hidden" id="emojiPicker"></div>
+          <div class="hotkey-hint">CTRL + SHIFT + F → Toggle Overlay &nbsp;|&nbsp; CTRL + SHIFT + E → Interaction Mode &nbsp;|&nbsp; ESC → Back to Game</div>
         </div>
 
         <aside class="member-strip" aria-label="Online members">
-          <button class="member-avatar status-online" data-name="RangerOne" data-state="Online" data-voice="In voice">
+          <button class="member-avatar status-online" data-name="RangerOne" data-state="Online" data-voice="In voice" data-playstyle="Events / Daily Ops">
             <span>R</span>
           </button>
-          <button class="member-avatar status-idle" data-name="AshMara" data-state="Idle" data-voice="Lobby">
+          <button class="member-avatar status-idle" data-name="AshMara" data-state="Idle" data-voice="Lobby" data-playstyle="Casual / Trade">
             <span>A</span>
           </button>
-          <button class="member-avatar status-online" data-name="MothSix" data-state="Online" data-voice="Squad 2">
+          <button class="member-avatar status-online" data-name="MothSix" data-state="Online" data-voice="Squad 2" data-playstyle="Events / Builds">
             <span>M</span>
           </button>
-          <button class="member-avatar status-offline" data-name="HollowFox" data-state="Offline" data-voice="—">
+          <button class="member-avatar status-offline" data-name="HollowFox" data-state="Offline" data-voice="—" data-playstyle="Quiet / PvE">
             <span>H</span>
           </button>
-          <button class="member-avatar status-online" data-name="VaultAnne" data-state="Online" data-voice="Guild Lobby">
+          <button class="member-avatar status-online" data-name="VaultAnne" data-state="Online" data-voice="Guild Lobby" data-playstyle="Trade / CAMP">
             <span>V</span>
           </button>
         </aside>
@@ -85,6 +77,11 @@
   </div>
 
   <div class="tooltip hidden" id="avatarTooltip"></div>
+  <div class="context-menu hidden" id="avatarMenu">
+    <button class="context-item" data-context-action="dm">Start Private Chat</button>
+    <button class="context-item" data-context-action="invite">Invite to Squad Voice</button>
+    <button class="context-item" data-context-action="profile">View Profile</button>
+  </div>
 
   <div class="modal-backdrop hidden" id="modalBackdrop"></div>
 
@@ -92,15 +89,15 @@
     <button class="modal-close" data-close>&times;</button>
     <div class="profile-card">
       <div class="profile-banner"></div>
-      <div class="profile-avatar">F</div>
+      <div class="profile-avatar" id="profileAvatar">F</div>
       <div class="profile-body">
-        <h2>FanVault User</h2>
-        <p class="profile-status">Ready for events, trade runs and calm voice sessions.</p>
+        <h2 id="profileName">FanVault User</h2>
+        <p class="profile-status" id="profileStatus">Ready for events, trade runs and calm voice sessions.</p>
 
         <div class="profile-grid">
           <div>
             <span class="label">Playstyle</span>
-            <div class="tag-list">
+            <div class="tag-list" id="profileTags">
               <span class="tag">Events</span>
               <span class="tag">Daily Ops</span>
               <span class="tag">Trade</span>
@@ -189,7 +186,7 @@
       <h2>Settings</h2>
       <div class="settings-list">
         <div class="setting-row"><span>Hotkey</span><strong>Ctrl + Shift + F</strong></div>
-        <div class="setting-row"><span>Theme</span><strong>Dark Flat</strong></div>
+        <div class="setting-row"><span>Interaction</span><strong>Ctrl + Shift + E</strong></div>
         <div class="setting-row"><span>Server</span><strong>localhost:3001</strong></div>
       </div>
     </div>
