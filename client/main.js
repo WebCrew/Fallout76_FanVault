@@ -1,10 +1,11 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, screen } = require("electron");
+const { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const { startLocalServer } = require("./local-server");
 
 let win;
 let localServer;
+let quitConfirmationOpen = false;
 let expanded = false;
 let launcherPosition = null;
 let panelSize = { width: 376, height: 684 };
@@ -127,8 +128,33 @@ function createWindow() {
   win.once("ready-to-show", () => win.showInactive());
 }
 
+async function requestQuit() {
+  if (quitConfirmationOpen) return false;
+  quitConfirmationOpen = true;
+  try {
+    const result = await dialog.showMessageBox(win, {
+      type: "question",
+      buttons: ["Cancel", "Exit FanVault"],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+      title: "Exit FanVault",
+      message: "Do you want to close FanVault completely?",
+      detail: "The overlay and local chat service will stop."
+    });
+    if (result.response === 1) {
+      app.quit();
+      return true;
+    }
+    return false;
+  } finally {
+    quitConfirmationOpen = false;
+  }
+}
+
 ipcMain.handle("overlay:get-state", () => layout);
 ipcMain.handle("overlay:set-expanded", (_event, nextExpanded) => setExpanded(nextExpanded));
+ipcMain.handle("app:request-quit", () => requestQuit());
 ipcMain.on("overlay:move-launcher", (_event, pointer) => {
   if (expanded || !pointer || !Number.isFinite(pointer.x) || !Number.isFinite(pointer.y) || !Number.isFinite(pointer.offsetX) || !Number.isFinite(pointer.offsetY)) return;
   const next = clampLauncher(pointer.x - pointer.offsetX, pointer.y - pointer.offsetY);
@@ -195,6 +221,8 @@ app.whenReady().then(async () => {
     if (win.isVisible()) win.hide();
     else win.showInactive();
   });
+
+  globalShortcut.register("Control+Shift+Q", requestQuit);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

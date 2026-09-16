@@ -315,6 +315,11 @@ document.querySelectorAll("[data-action]").forEach((button) => {
       setOverlayExpanded(!overlayExpanded);
       return;
     }
+    if (action === "exit-app") {
+      closeAllModals();
+      window.fanVaultOverlay?.requestQuit();
+      return;
+    }
     const modalId = modalMap[action];
     if (modalId) openModal(modalId);
   });
