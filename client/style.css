@@ -405,6 +405,8 @@ button {
 .member-state.offline { color: var(--offline); }
 .menu-card { width: 300px; }
 .menu-action { width: 100%; text-align: left; }
+.menu-action-danger { color: #ffb7b7; }
+.menu-action-danger:hover { background: rgba(190, 70, 78, 0.24); }
 
 .emoji-picker {
   margin: 0 12px 12px;

@@ -31,8 +31,14 @@ jobs:
       - name: Check client JavaScript
         run: |
           node --check client/app.js
+          node --check client/local-server.js
+          node --check client/local-server.test.js
           node --check client/main.js
           node --check client/preload.js
+
+      - name: Test embedded chat service
+        working-directory: client
+        run: npm run test:local-server
 
   server:
     name: Server

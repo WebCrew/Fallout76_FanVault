@@ -2,7 +2,7 @@ const ws = new WebSocket("ws://localhost:3001");
 const messages = document.getElementById("messages");
 const msgBox = document.getElementById("msg");
 const sendBtn = document.getElementById("sendBtn");
-const imageInput = document.getElementById("imageInput");
+const imageBtn = document.getElementById("imageBtn");
 const uploadNote = document.getElementById("uploadNote");
 const emojiBtn = document.getElementById("emojiBtn");
 const emojiPicker = document.getElementById("emojiPicker");
@@ -315,6 +315,11 @@ document.querySelectorAll("[data-action]").forEach((button) => {
       setOverlayExpanded(!overlayExpanded);
       return;
     }
+    if (action === "exit-app") {
+      closeAllModals();
+      window.fanVaultOverlay?.requestQuit();
+      return;
+    }
     const modalId = modalMap[action];
     if (modalId) openModal(modalId);
   });
@@ -354,19 +359,25 @@ emojiSet.forEach((emoji) => {
   emojiPicker.appendChild(btn);
 });
 emojiBtn.addEventListener("click", () => emojiPicker.classList.toggle("hidden"));
-imageInput.addEventListener("change", () => {
-  const file = imageInput.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const article = document.createElement("article");
-    article.className = "message";
-    article.innerHTML = `<span class="message-meta">${escapeHtml(userName)} · image</span><p>Uploaded image<br><img class="image-preview" src="${reader.result}" alt="uploaded image" /></p>`;
-    messages.appendChild(article);
-    messages.scrollTop = messages.scrollHeight;
-  };
-  reader.readAsDataURL(file);
-  uploadNote.textContent = file.name;
+imageBtn.addEventListener("click", async () => {
+  let image;
+  try {
+    image = await window.fanVaultOverlay?.pickImage();
+  } catch (_error) {
+    uploadNote.textContent = "Image could not be opened";
+    return;
+  }
+  if (!image || image.canceled) return;
+  if (image.error) {
+    uploadNote.textContent = image.error;
+    return;
+  }
+  const article = document.createElement("article");
+  article.className = "message";
+  article.innerHTML = `<span class="message-meta">${escapeHtml(userName)} · image</span><p>Uploaded image<br><img class="image-preview" src="${image.dataUrl}" alt="uploaded image" /></p>`;
+  messages.appendChild(article);
+  messages.scrollTop = messages.scrollHeight;
+  uploadNote.textContent = image.name;
 });
 function positionTooltip(event) {
   placeFloatingElement(tooltip, event.currentTarget);

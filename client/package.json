@@ -1,11 +1,40 @@
 {
   "name": "fanvault-client",
-  "version": "0.4.0-step5",
+  "version": "0.4.0-step6",
+  "description": "FanVault companion overlay for Fallout 76",
+  "author": "WebCrew",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build:win": "electron-builder --win portable",
+    "test:local-server": "node local-server.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
   },
   "devDependencies": {
-    "electron": "^28.0.0"
+    "electron": "44.3.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "de.nettwin.fanvault",
+    "productName": "FanVault",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app.js",
+      "index.html",
+      "local-server.js",
+      "main.js",
+      "preload.js",
+      "style.css",
+      "package.json"
+    ],
+    "win": {
+      "artifactName": "FanVault-${version}-portable.${ext}",
+      "target": "portable"
+    }
   }
 }

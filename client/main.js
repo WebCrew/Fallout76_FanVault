@@ -1,8 +1,11 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, screen } = require("electron");
+const { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { startLocalServer } = require("./local-server");
 
 let win;
+let localServer;
+let quitConfirmationOpen = false;
 let expanded = false;
 let launcherPosition = null;
 let panelSize = { width: 376, height: 684 };
@@ -125,8 +128,66 @@ function createWindow() {
   win.once("ready-to-show", () => win.showInactive());
 }
 
+async function requestQuit() {
+  if (quitConfirmationOpen) return false;
+  quitConfirmationOpen = true;
+  try {
+    const result = await dialog.showMessageBox(win, {
+      type: "question",
+      buttons: ["Cancel", "Exit FanVault"],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+      title: "Exit FanVault",
+      message: "Do you want to close FanVault completely?",
+      detail: "The overlay and local chat service will stop."
+    });
+    if (result.response === 1) {
+      app.quit();
+      return true;
+    }
+    return false;
+  } finally {
+    quitConfirmationOpen = false;
+  }
+}
+
+async function pickImage() {
+  const result = await dialog.showOpenDialog(win, {
+    title: "Choose an image",
+    properties: ["openFile"],
+    filters: [
+      { name: "Images", extensions: ["png", "jpg", "jpeg", "webp", "gif"] }
+    ]
+  });
+  if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+  const filePath = result.filePaths[0];
+  const extension = path.extname(filePath).toLowerCase();
+  const mimeTypes = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif"
+  };
+  const mimeType = mimeTypes[extension];
+  if (!mimeType) return { error: "Unsupported image format" };
+
+  const stats = fs.statSync(filePath);
+  if (stats.size > 10 * 1024 * 1024) return { error: "Image is larger than 10 MB" };
+  const data = fs.readFileSync(filePath).toString("base64");
+  return {
+    canceled: false,
+    name: path.basename(filePath),
+    dataUrl: `data:${mimeType};base64,${data}`
+  };
+}
+
 ipcMain.handle("overlay:get-state", () => layout);
 ipcMain.handle("overlay:set-expanded", (_event, nextExpanded) => setExpanded(nextExpanded));
+ipcMain.handle("app:request-quit", () => requestQuit());
+ipcMain.handle("app:pick-image", () => pickImage());
 ipcMain.on("overlay:move-launcher", (_event, pointer) => {
   if (expanded || !pointer || !Number.isFinite(pointer.x) || !Number.isFinite(pointer.y) || !Number.isFinite(pointer.offsetX) || !Number.isFinite(pointer.offsetY)) return;
   const next = clampLauncher(pointer.x - pointer.offsetX, pointer.y - pointer.offsetY);
@@ -166,7 +227,26 @@ ipcMain.on("overlay:commit-position", () => {
   if (!expanded && launcherPosition) savePosition();
 });
 
-app.whenReady().then(() => {
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+
+if (!hasSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (!win || win.isDestroyed()) return;
+    if (!win.isVisible()) win.showInactive();
+    win.focus();
+  });
+}
+
+app.whenReady().then(async () => {
+  try {
+    localServer = await startLocalServer();
+  } catch (error) {
+    if (error.code !== "EADDRINUSE") throw error;
+    // Development convenience: reuse an already running local server.
+  }
+
   createWindow();
 
   globalShortcut.register("Control+Shift+F", () => {
@@ -175,6 +255,8 @@ app.whenReady().then(() => {
     else win.showInactive();
   });
 
+  globalShortcut.register("Control+Shift+Q", requestQuit);
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -182,6 +264,7 @@ app.whenReady().then(() => {
 
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
+  if (localServer) localServer.close().catch(() => {});
 });
 
 app.on("window-all-closed", () => {

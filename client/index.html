@@ -46,10 +46,7 @@
 
           <div class="composer-toolbar">
             <button id="emojiBtn" class="icon-btn" title="Emoji">☺</button>
-            <label class="icon-btn upload-btn" title="Upload image">
-              +
-              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
-            </label>
+            <button id="imageBtn" class="icon-btn upload-btn" title="Upload image" aria-label="Upload image">+</button>
             <span class="toolbar-note" id="uploadNote">Images, emojis and links supported</span>
           </div>
 
@@ -184,6 +181,7 @@
         <button class="menu-action" data-action="open-profile-from-menu">Profile</button>
         <button class="menu-action" data-action="open-settings">Settings</button>
         <button class="menu-action" data-action="open-members">Members</button>
+        <button class="menu-action menu-action-danger" data-action="exit-app">Exit FanVault</button>
       </div>
     </div>
   </section>
@@ -195,6 +193,7 @@
       <div class="settings-list">
         <div class="setting-row"><span>Hotkey</span><strong>Ctrl + Shift + F</strong></div>
         <div class="setting-row"><span>Interaction</span><strong>Ctrl + Shift + E</strong></div>
+        <div class="setting-row"><span>Exit</span><strong>Ctrl + Shift + Q</strong></div>
         <div class="setting-row"><span>Server</span><strong>localhost:3001</strong></div>
       </div>
     </div>

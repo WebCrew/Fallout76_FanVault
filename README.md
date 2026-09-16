@@ -1,4 +1,4 @@
-# FanVault v0.4 — Step 5
+# FanVault v0.4 — Step 6
 Fallout 76 Clan Companion
 
 ## Step 2: real overlay shell
@@ -23,21 +23,27 @@ Fallout 76 Clan Companion
 - emoji picker
 - image upload preview
 - automatic link detection
-- local websocket chat server
+- local websocket chat service that starts automatically with the app
+
+## Windows prototype
+Download the `FanVault-Windows-portable` artifact from the Windows build on GitHub Actions,
+unzip it and start the EXE. No console, Node.js installation or separate server command is needed.
 
 ## Run locally
-### Server
-```bash
-cd server
-npm install
-npm run dev
-```
-
-### Client
+### Client (development)
 ```bash
 cd client
 npm install
 npm start
+```
+
+The client starts its local chat service automatically. The separate server remains available
+for backend development:
+
+```bash
+cd server
+npm install
+npm run dev
 ```
 
 ## Current focus
