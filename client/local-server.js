@@ -16,10 +16,16 @@ function startLocalServer({ host = DEFAULT_HOST, port = DEFAULT_PORT } = {}) {
       response.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
       response.end("FanVault local chat service running");
     });
-    const webSocketServer = new WebSocket.Server({ server });
-    const clients = new Map();
+    server.once("error", reject);
+    server.listen(port, host, () => {
+      server.removeListener("error", reject);
 
-    webSocketServer.on("connection", (socket) => {
+      // Create the WebSocket server only after the TCP port is ours. Creating it
+      // earlier makes ws re-emit EADDRINUSE as an uncaught main-process error.
+      const webSocketServer = new WebSocket.Server({ server });
+      const clients = new Map();
+
+      webSocketServer.on("connection", (socket) => {
       socket.userName = null;
 
       socket.on("message", (message) => {
@@ -45,11 +51,8 @@ function startLocalServer({ host = DEFAULT_HOST, port = DEFAULT_PORT } = {}) {
           clients.delete(socket.userName);
         }
       });
-    });
+      });
 
-    server.once("error", reject);
-    server.listen(port, host, () => {
-      server.removeListener("error", reject);
       resolve({
         close: () => new Promise((done) => {
           webSocketServer.clients.forEach((client) => client.close());

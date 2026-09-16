@@ -6,7 +6,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:win": "electron-builder --win portable"
+    "build:win": "electron-builder --win portable",
+    "test:local-server": "node local-server.test.js"
   },
   "dependencies": {
     "ws": "^8.18.3"
