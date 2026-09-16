@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("fanVaultOverlay", {
   commitPosition: () => ipcRenderer.send("overlay:commit-position"),
   setExpanded: (expanded) => ipcRenderer.invoke("overlay:set-expanded", Boolean(expanded)),
   requestQuit: () => ipcRenderer.invoke("app:request-quit"),
+  pickImage: () => ipcRenderer.invoke("app:pick-image"),
   onLayout: (callback) => {
     const listener = (_event, layout) => callback(layout);
     ipcRenderer.on("overlay:layout", listener);

@@ -152,9 +152,42 @@ async function requestQuit() {
   }
 }
 
+async function pickImage() {
+  const result = await dialog.showOpenDialog(win, {
+    title: "Choose an image",
+    properties: ["openFile"],
+    filters: [
+      { name: "Images", extensions: ["png", "jpg", "jpeg", "webp", "gif"] }
+    ]
+  });
+  if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+  const filePath = result.filePaths[0];
+  const extension = path.extname(filePath).toLowerCase();
+  const mimeTypes = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif"
+  };
+  const mimeType = mimeTypes[extension];
+  if (!mimeType) return { error: "Unsupported image format" };
+
+  const stats = fs.statSync(filePath);
+  if (stats.size > 10 * 1024 * 1024) return { error: "Image is larger than 10 MB" };
+  const data = fs.readFileSync(filePath).toString("base64");
+  return {
+    canceled: false,
+    name: path.basename(filePath),
+    dataUrl: `data:${mimeType};base64,${data}`
+  };
+}
+
 ipcMain.handle("overlay:get-state", () => layout);
 ipcMain.handle("overlay:set-expanded", (_event, nextExpanded) => setExpanded(nextExpanded));
 ipcMain.handle("app:request-quit", () => requestQuit());
+ipcMain.handle("app:pick-image", () => pickImage());
 ipcMain.on("overlay:move-launcher", (_event, pointer) => {
   if (expanded || !pointer || !Number.isFinite(pointer.x) || !Number.isFinite(pointer.y) || !Number.isFinite(pointer.offsetX) || !Number.isFinite(pointer.offsetY)) return;
   const next = clampLauncher(pointer.x - pointer.offsetX, pointer.y - pointer.offsetY);
