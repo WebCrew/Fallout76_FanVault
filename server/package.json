@@ -1,6 +1,6 @@
 {
   "name": "fanvault-server",
-  "version": "0.2.0",
+  "version": "0.4.0-step5",
   "main": "server.js",
   "scripts": {
     "dev": "node server.js"

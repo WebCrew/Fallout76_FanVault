@@ -19,10 +19,9 @@ body {
   margin: 0;
   font-family: Inter, Segoe UI, Arial, sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(81, 112, 74, 0.18), transparent 28%),
-    linear-gradient(180deg, #0b1015 0%, #090d12 100%);
+  background: transparent;
   overflow: hidden;
+  user-select: none;
 }
 
 button, input { font: inherit; }
@@ -32,50 +31,52 @@ button {
   cursor: pointer;
 }
 
-.app-shell { position: relative; min-height: 100%; }
+.app-shell { position: relative; width: 100%; height: 100%; }
 
-.overlay-bar {
+.vault-launcher {
   position: fixed;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  background: rgba(8, 12, 16, 0.5);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  box-shadow: var(--shadow);
-  z-index: 40;
+  left: 8px;
+  top: 8px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  color: #f3d66f;
+  background: radial-gradient(circle at 35% 28%, #354539, #151d1b 68%, #090d0d);
+  border: 2px solid rgba(243, 214, 111, 0.85);
+  box-shadow: 0 8px 24px rgba(0,0,0,.48), inset 0 0 0 4px rgba(0,0,0,.28);
+  touch-action: none;
+  transition: filter .18s ease, box-shadow .18s ease;
 }
-
-.overlay-btn {
-  min-width: 82px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.overlay-btn:hover,
-.overlay-btn.is-active {
-  background: rgba(134, 178, 126, 0.18);
-  transform: translateY(-1px);
-}
+.vault-launcher:hover, .vault-launcher:focus-visible { filter: brightness(1.12); box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 0 3px rgba(134,178,126,.24), inset 0 0 0 4px rgba(0,0,0,.28); outline: none; }
+.vault-launcher.is-dragging { cursor: grabbing; transition: none; }
+.launcher-ring { position: absolute; inset: 7px; border: 1px dashed rgba(243,214,111,.5); border-radius: 50%; }
+.launcher-mark { font-size: 21px; font-weight: 900; letter-spacing: -.06em; text-shadow: 0 2px 3px #000; }
+.launcher-status { position: absolute; width: 13px; height: 13px; right: 4px; bottom: 6px; border-radius: 50%; background: var(--online); border: 3px solid #101616; }
+.panel-actions { display: flex; align-items: center; gap: 5px; margin-top: 11px; }
+.panel-action, .panel-close { padding: 6px 8px; border-radius: 9px; background: rgba(255,255,255,.05); color: var(--muted); font-size: 10px; }
+.panel-close { margin-left: auto; width: 28px; height: 28px; padding: 0; font-size: 18px; color: var(--text); }
+.panel-action:hover, .panel-close:hover { background: rgba(134,178,126,.16); color: var(--text); }
 
 .workspace {
   position: absolute;
   inset: 0;
-  padding: 72px 18px 18px;
+  padding: 8px;
   display: flex;
   align-items: flex-start;
+  pointer-events: none;
 }
+.app-shell[data-panel-side="right"] .workspace { padding-left: 88px; }
+.app-shell[data-panel-side="left"] .workspace { padding-right: 88px; justify-content: flex-end; }
 
 .chat-dock {
+  position: relative;
+  pointer-events: auto;
   display: flex;
-  width: 340px;
-  max-height: calc(100vh - 94px);
+  width: var(--dock-width, 372px);
+  height: var(--dock-height, min(684px, calc(100vh - 16px)));
   border: 1px solid var(--line);
   border-radius: 22px;
   overflow: hidden;
@@ -83,7 +84,8 @@ button {
 }
 
 .chat-panel {
-  width: 280px;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--panel);
@@ -94,6 +96,16 @@ button {
   padding: 14px 14px 10px;
   border-bottom: 1px solid var(--line);
 }
+
+.chat-titlebar {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: grab;
+  touch-action: none;
+}
+.chat-titlebar.is-dragging { cursor: grabbing; }
+.chat-titlebar > div { min-width: 0; }
 
 .chat-header h1 {
   margin: 0;
@@ -131,6 +143,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  user-select: text;
 }
 
 .message {
@@ -227,7 +240,8 @@ button {
 }
 
 .member-strip {
-  width: 60px;
+  flex: 0 0 64px;
+  width: 64px;
   background: rgba(9, 13, 18, 0.94);
   border-left: 1px solid var(--line);
   display: flex;
@@ -278,6 +292,21 @@ button {
   pointer-events: none;
   white-space: pre-line;
 }
+
+.resize-grip {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 19px;
+  height: 19px;
+  z-index: 20;
+  cursor: nwse-resize;
+  touch-action: none;
+  opacity: .72;
+  background: linear-gradient(135deg, transparent 48%, rgba(232,237,242,.32) 49% 54%, transparent 55%),
+              linear-gradient(135deg, transparent 66%, rgba(232,237,242,.52) 67% 72%, transparent 73%);
+}
+.resize-grip:hover, .resize-grip.is-resizing { opacity: 1; }
 
 .modal-backdrop {
   position: fixed;
@@ -401,8 +430,8 @@ button {
 .hidden { display: none !important; }
 
 @media (max-width: 980px) {
-  .chat-dock { width: 320px; }
-  .chat-panel { width: 260px; }
+  .chat-dock { width: var(--dock-width, 372px); }
+  .chat-panel { min-width: 0; }
 }
 
 .dm-row {

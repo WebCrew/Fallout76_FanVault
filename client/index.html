@@ -8,21 +8,28 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="overlay-bar" aria-label="Overlay navigation">
-      <button class="overlay-btn is-active" data-action="toggle-chat">Chat</button>
-      <button class="overlay-btn" data-action="open-voice">Voice</button>
-      <button class="overlay-btn" data-action="open-members">Members</button>
-      <button class="overlay-btn" data-action="open-menu">Menu</button>
-    </header>
+    <button class="vault-launcher" id="vaultLauncher" aria-label="Open FanVault" title="Drag to move · Click to open">
+      <span class="launcher-ring" aria-hidden="true"></span>
+      <span class="launcher-mark" aria-hidden="true">76</span>
+      <span class="launcher-status" aria-hidden="true"></span>
+    </button>
 
-    <main class="workspace">
+    <main class="workspace hidden" id="workspace">
       <section class="chat-dock" id="chatDock">
         <div class="chat-panel">
           <div class="chat-header">
-            <div>
-              <h1>Guild Chat</h1>
-              <p>General guild conversation.</p>
+            <div class="chat-titlebar" id="chatTitlebar" title="Drag to move chat widget">
+              <div>
+                <h1>Guild Chat</h1>
+                <p>General guild conversation.</p>
+              </div>
             </div>
+            <nav class="panel-actions" aria-label="FanVault tools">
+              <button class="panel-action" data-action="open-voice">Voice</button>
+              <button class="panel-action" data-action="open-members">Members</button>
+              <button class="panel-action" data-action="open-menu">Menu</button>
+              <button class="panel-close" id="collapseBtn" aria-label="Close chat">×</button>
+            </nav>
             <div class="channel-tabs" id="channelTabs">
               <button class="channel-tab is-active">Lobby</button>
               <button class="channel-tab">Ingame</button>
@@ -72,6 +79,7 @@
             <span>V</span>
           </button>
         </aside>
+        <div class="resize-grip" id="resizeGrip" title="Drag to resize chat widget" aria-label="Resize chat widget"></div>
       </section>
     </main>
   </div>
