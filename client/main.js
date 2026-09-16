@@ -1,8 +1,10 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, screen } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { startLocalServer } = require("./local-server");
 
 let win;
+let localServer;
 let expanded = false;
 let launcherPosition = null;
 let panelSize = { width: 376, height: 684 };
@@ -166,7 +168,26 @@ ipcMain.on("overlay:commit-position", () => {
   if (!expanded && launcherPosition) savePosition();
 });
 
-app.whenReady().then(() => {
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+
+if (!hasSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (!win || win.isDestroyed()) return;
+    if (!win.isVisible()) win.showInactive();
+    win.focus();
+  });
+}
+
+app.whenReady().then(async () => {
+  try {
+    localServer = await startLocalServer();
+  } catch (error) {
+    if (error.code !== "EADDRINUSE") throw error;
+    // Development convenience: reuse an already running local server.
+  }
+
   createWindow();
 
   globalShortcut.register("Control+Shift+F", () => {
@@ -182,6 +203,7 @@ app.whenReady().then(() => {
 
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
+  if (localServer) localServer.close().catch(() => {});
 });
 
 app.on("window-all-closed", () => {
