@@ -10,7 +10,7 @@
     "test:local-server": "node local-server.test.js"
   },
   "dependencies": {
-    "ws": "^8.18.3"
+    "ws": "^8.22.0"
   },
   "devDependencies": {
     "electron": "44.3.0",
