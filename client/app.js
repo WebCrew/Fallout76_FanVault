@@ -32,7 +32,7 @@ const profileTags = document.getElementById("profileTags");
 const emojiSet = ["😀","😁","😂","🙂","😉","😍","😎","🤝","👍","👎","🔥","⚡","💀","🎯","🎮","🛠️","📦","💬","🚀","⭐","🍻","😴","😅","🤷","✅","❌","🧭","🏕️","💰","🎉"];
 const channels = runtimeConfig.game.channels;
 const channelDescriptions = runtimeConfig.game.channelDescriptions;
-const channelMessages = runtimeConfig.game.demoMessages;
+const channelMessages = structuredClone(runtimeConfig.game.demoMessages);
 const dmMessages = {};
 const modalMap = {
   "open-voice": "voiceModal",
