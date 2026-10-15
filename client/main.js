@@ -2,6 +2,9 @@ const { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen } = require(
 const fs = require("fs");
 const path = require("path");
 const { startLocalServer } = require("./local-server");
+const { loadRuntimeConfig } = require("./core/runtime-config");
+
+let runtimeConfig;
 
 let win;
 let localServer;
@@ -18,7 +21,6 @@ const PANEL_MAX_WIDTH = 720;
 const PANEL_MAX_HEIGHT = 880;
 const EXPANDED_PADDING_WIDTH = 96;
 const EXPANDED_PADDING_HEIGHT = 16;
-const EDGE_GAP = 12;
 
 function positionFile() {
   return path.join(app.getPath("userData"), "overlay-position.json");
@@ -34,7 +36,10 @@ function loadPosition() {
     // First launch or an invalid old position: use the safe default below.
   }
   const area = screen.getPrimaryDisplay().workArea;
-  return { x: area.x + EDGE_GAP, y: area.y + Math.round((area.height - COLLAPSED_SIZE) / 2) };
+  return {
+    x: area.x + Math.round((area.width - COLLAPSED_SIZE) / 2),
+    y: area.y + Math.round((area.height - COLLAPSED_SIZE) / 2)
+  };
 }
 
 function savePosition() {
@@ -113,7 +118,7 @@ function createWindow() {
     skipTaskbar: true,
     hasShadow: false,
     show: false,
-    title: "FanVault - Fallout 76 Clan Companion",
+    title: runtimeConfig.game.windowTitle,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
@@ -184,6 +189,7 @@ async function pickImage() {
   };
 }
 
+ipcMain.handle("app:get-config", () => runtimeConfig);
 ipcMain.handle("overlay:get-state", () => layout);
 ipcMain.handle("overlay:set-expanded", (_event, nextExpanded) => setExpanded(nextExpanded));
 ipcMain.handle("app:request-quit", () => requestQuit());
@@ -241,10 +247,20 @@ if (!hasSingleInstanceLock) {
 
 app.whenReady().then(async () => {
   try {
-    localServer = await startLocalServer();
-  } catch (error) {
-    if (error.code !== "EADDRINUSE") throw error;
-    // Development convenience: reuse an already running local server.
+    runtimeConfig = loadRuntimeConfig();
+  } catch (_error) {
+    dialog.showErrorBox("FanVault configuration", "Invalid FanVault configuration. Check FANVAULT_ENV, FANVAULT_GAME and FANVAULT_API_BASE_URL.");
+    app.quit();
+    return;
+  }
+
+  if (runtimeConfig.transport.mode === "local-prototype") {
+    try {
+      localServer = await startLocalServer();
+    } catch (error) {
+      if (error.code !== "EADDRINUSE") throw error;
+      // Development convenience: reuse an already running local server.
+    }
   }
 
   createWindow();

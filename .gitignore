@@ -50,3 +50,10 @@ coverage/
 
 # Node REPL history
 .node_repl_history
+
+# Local credentials and private deployment configuration
+.env.*
+!.env.example
+*.local.json
+*Zugang*.txt
+*credentials*.txt

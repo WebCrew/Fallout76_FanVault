@@ -485,3 +485,5 @@ button {
   font-size: 10px;
   line-height: 1.4;
 }
+
+.prototype-notice { display: block; color: var(--muted); font-size: 10px; line-height: 1.4; margin-top: 4px; }
