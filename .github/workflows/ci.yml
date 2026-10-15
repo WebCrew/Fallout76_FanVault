@@ -35,6 +35,12 @@ jobs:
           node --check client/local-server.test.js
           node --check client/main.js
           node --check client/preload.js
+          node --check client/core/runtime-config.js
+          node --check client/games/fallout76.js
+
+      - name: Test runtime configuration
+        working-directory: client
+        run: npm run test:config
 
       - name: Test embedded chat service
         working-directory: client

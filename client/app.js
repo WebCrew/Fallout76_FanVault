@@ -1,4 +1,9 @@
-const ws = new WebSocket("ws://localhost:3001");
+async function initializeFanVault() {
+const runtimeConfig = await window.fanVaultOverlay.getConfig();
+const ws = runtimeConfig.transport.localChatUrl ? new WebSocket(runtimeConfig.transport.localChatUrl) : null;
+document.querySelector(".launcher-mark").textContent = runtimeConfig.game.launcherMark;
+document.getElementById("runtimeMode").textContent = "Prototype · Demo data · No Net-Twin connection";
+document.getElementById("configuredServer").textContent = ws ? "Local demo only" : "Chat unavailable";
 const messages = document.getElementById("messages");
 const msgBox = document.getElementById("msg");
 const sendBtn = document.getElementById("sendBtn");
@@ -25,32 +30,9 @@ const profileAvatar = document.getElementById("profileAvatar");
 const profileStatus = document.getElementById("profileStatus");
 const profileTags = document.getElementById("profileTags");
 const emojiSet = ["😀","😁","😂","🙂","😉","😍","😎","🤝","👍","👎","🔥","⚡","💀","🎯","🎮","🛠️","📦","💬","🚀","⭐","🍻","😴","😅","🤷","✅","❌","🧭","🏕️","💰","🎉"];
-const channels = ["Lobby", "Ingame", "Tutorials", "Guild News"];
-const channelDescriptions = {
-  "Lobby": "General guild conversation.",
-  "Ingame": "Live team talk during events and runs.",
-  "Tutorials": "Tips, builds and route help.",
-  "Guild News": "Announcements and important updates."
-};
-const channelMessages = {
-  "Lobby": [
-    { meta: "System", text: "FanVault connected. Press Ctrl + Shift + F to hide or show the client.", className: "system-message" },
-    { meta: "RangerOne · 16:05", text: "Anyone up for Daily Ops later?" },
-    { meta: "AshMara · 16:06", text: "I can join after this event run." }
-  ],
-  "Ingame": [
-    { meta: "MothSix · 16:09", text: "Encryptid in 5 minutes. Meet at the station." },
-    { meta: "VaultAnne · 16:10", text: "On my way. Need one more for the group." }
-  ],
-  "Tutorials": [
-    { meta: "GuideBot", text: "Tip: Use lunchboxes before Expedition runs for faster XP stacking.", className: "system-message" },
-    { meta: "RangerOne · 16:15", text: "I uploaded a route map yesterday. Check pinned notes later." }
-  ],
-  "Guild News": [
-    { meta: "Guild News", text: "Saturday 19:00 - Event Night / Nuke Runs / Trade Session.", className: "system-message" },
-    { meta: "Guild News", text: "New members should post their playstyle and platform links in Profile.", className: "system-message" }
-  ]
-};
+const channels = runtimeConfig.game.channels;
+const channelDescriptions = runtimeConfig.game.channelDescriptions;
+const channelMessages = structuredClone(runtimeConfig.game.demoMessages);
 const dmMessages = {};
 const modalMap = {
   "open-voice": "voiceModal",
@@ -147,8 +129,8 @@ function syncDmTabs() {
 function handleSend() {
   const value = msgBox.value.trim();
   if (!value) return;
-  if (ws.readyState !== WebSocket.OPEN) {
-    uploadNote.textContent = "Chat server is not connected yet";
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    uploadNote.textContent = "No chat connection. Net-Twin chat is not integrated yet.";
     return;
   }
   if (currentContext.type === "channel") {
@@ -403,12 +385,12 @@ ${member.voice}`;
     openAvatarMenu(member, avatar);
   });
 });
-ws.addEventListener("open", () => {
+ws?.addEventListener("open", () => {
   ws.send(JSON.stringify({ type: "register", from: userName, clientId }));
-  appendToChannel({ channel: "Lobby", meta: "System", text: `Connection established as ${userName}.`, className: "system-message" });
+  appendToChannel({ channel: "Lobby", meta: "System", text: `Local demo connected as ${userName}; this is not a Net-Twin identity.`, className: "system-message" });
   setChannel("Lobby");
 });
-ws.addEventListener("message", (event) => {
+ws?.addEventListener("message", (event) => {
   try {
     const payload = JSON.parse(String(event.data));
     if (payload.type === "chat") {
@@ -423,7 +405,17 @@ ws.addEventListener("message", (event) => {
     appendToChannel({ channel: "Lobby", meta: "Guild · now", text: String(event.data) });
   }
 });
-ws.addEventListener("close", () => {
+ws?.addEventListener("close", () => {
   appendToChannel({ channel: "Lobby", meta: "System", text: "Server connection closed.", className: "system-message" });
 });
 setChannel("Lobby");
+
+if (!ws) {
+  sendBtn.disabled = true;
+  uploadNote.textContent = "Net-Twin integration is not available in this build.";
+}
+}
+
+initializeFanVault().catch(() => {
+  document.getElementById("uploadNote").textContent = "FanVault configuration could not be loaded. Restart the desktop app.";
+});

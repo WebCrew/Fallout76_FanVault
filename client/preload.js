@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("fanVaultOverlay", {
+  getConfig: () => ipcRenderer.invoke("app:get-config"),
   getState: () => ipcRenderer.invoke("overlay:get-state"),
   moveLauncher: (pointer) => ipcRenderer.send("overlay:move-launcher", pointer),
   moveWidget: (pointer) => ipcRenderer.send("overlay:move-widget", pointer),
