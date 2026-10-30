@@ -76,6 +76,15 @@ function domNode(tag) {
   return { tag, children: [], textContent: "", appendChild(child) { this.children.push(child); },
     set innerHTML(_value) { throw new Error("HTML injection is forbidden"); } };
 }
+test("GIFs, legacy voice notes and unsupported rich content do not silently disappear", () => {
+  const gif = chat.normalizeMessage(message({ message_orginal_decoded: "", gif: "private-gif" }));
+  assert.equal(gif.attachments[0].type, "gif");
+  assert.ok(!JSON.stringify(gif).includes("private-gif"));
+  const voice = chat.normalizeMessage(message({ message_orginal_decoded: "", voice_note: "private-voice" }));
+  assert.equal(voice.attachments[0].type, "audio");
+  const unknown = chat.normalizeMessage(message({ message_orginal_decoded: "", story: { secret: "not forwarded" } }));
+  assert.equal(unknown.text, "Message content is not supported in this build.");
+});
 test("renderer treats message, reply and attachment names as text and never autoloads media", () => {
   const document = { createElement: domNode };
   const parent = domNode("div");

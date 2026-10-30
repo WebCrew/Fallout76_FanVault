@@ -36,7 +36,7 @@
         text: unavailable ? "Original message unavailable" : text(raw.reply.snippet, 300) };
     }
     const media = raw.media && typeof raw.media === "object" ? raw.media : {};
-    const items = Array.isArray(media.items) ? media.items : [];
+    const items = Array.isArray(media.items) && media.items.length ? media.items : [...(Array.isArray(media.photos) ? media.photos : []), ...(media.video ? [media.video] : [])];
     const files = Array.isArray(media.files) ? media.files : media.file ? [media.file] : [];
     for (const item of [...items, ...files, ...(media.audio ? [media.audio] : [])].slice(0, 50)) {
       if (!item || !["photo", "video", "audio", "file"].includes(item.media_type)) continue;
@@ -51,6 +51,9 @@
     if (raw.call && ["completed", "declined", "missed"].includes(raw.call.status)) {
       result.call = { type: flag(raw.call.is_video) ? "video" : "audio", status: raw.call.status, duration: count(raw.call.duration) };
     }
+    if (text(raw.gif)) result.attachments.push({ id: null, type: "gif", name: "", size: 0 });
+    if (text(raw.voice_note) && !result.attachments.some(a => a.type === "audio")) result.attachments.push({ id: null, type: "audio", name: "", size: 0 });
+    if (!result.text && !result.attachments.length && !result.call) result.text = "Message content is not supported in this build.";
     return result;
   }
   function pagination(data, page = 0) {
