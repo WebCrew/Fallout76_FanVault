@@ -1,33 +1,20 @@
-# FanVault v0.3
-Fallout 76 Clan Companion
+# FanVault documentation
 
-## Included in this build
-- transparent 4-button overlay bar
-- slim left chat panel
-- avatar strip with status colors
-- working chat categories: Lobby, Ingame, Tutorials, Guild News
-- profile card modal
-- popups for Voice, Members, Menu and Settings
-- emoji picker
-- image upload preview
-- automatic link detection
-- local websocket chat server
+Current candidate: v0.5.0-step8. Working prototype and planned integration are distinguished throughout.
 
-## Run locally
-### Server
-```bash
-cd server
-npm install
-npm run dev
-```
+- [Authoritative product scope (German)](product-scope.md)
 
-### Client
-```bash
-cd client
-npm install
-npm start
-```
+- [Player guide](player-guide.md)
+- [Guild leader guide](guild-leader-guide.md)
+- [Developer guide and configuration](developer-guide.md)
+- [Architecture and decisions](architecture.md)
+- [Security and privacy](security.md)
+- [Known limitations](known-limitations.md)
+- [Testing and acceptance](testing.md)
+- [Troubleshooting](troubleshooting.md)
+- [API status](api/README.md)
+- [Legacy WebSocket protocol](api/websocket.md)
+- [Changelog](releases/changelog.md)
 
-## Current focus
-This version is mainly for UI and chat-flow testing.
-Voice logic, moderation logic and full settings are still scaffold/demo level.
+- [Sngine 5.0 audit and compatibility](sngine-5-upgrade.md)
+- [Four-person direct squad voice: agreed scope](voice-rooms.md)
