@@ -2,6 +2,8 @@
 
 Current candidate: v0.5.0-step8. Working prototype and planned integration are distinguished throughout.
 
+- [Authoritative product scope (German)](product-scope.md)
+
 - [Player guide](player-guide.md)
 - [Guild leader guide](guild-leader-guide.md)
 - [Developer guide and configuration](developer-guide.md)
