@@ -15,3 +15,4 @@ Current candidate: v0.5.0-step8. Working prototype and planned integration are d
 - [Changelog](releases/changelog.md)
 
 - [Sngine 5.0 audit and compatibility](sngine-5-upgrade.md)
+- [Four-person direct squad voice: agreed scope](voice-rooms.md)

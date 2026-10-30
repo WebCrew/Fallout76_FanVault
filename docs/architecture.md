@@ -22,7 +22,7 @@ Windows overlay -> FanVault API -> Net-Twin identity, gamertags and existing tex
 - No API keys for ordinary players/leaders. Later developer apps/bots may receive separately scoped, revocable access. Global Sngine secrets stay server-side.
 - GitHub hosts source, docs and Windows downloads. The running API must fit the existing shared hosting, in the reserved `fanvault` directory. PHP and bounded polling are proposed; capacity/deployment remain to be validated.
 - Reuse existing message storage. A separate FanVault SQL database is conditional on session/metadata needs; none is created by this step.
-- No additional paid services. Reliable audio remains a separate feasibility task. Finish Fallout 76 before implementing another game.
+- No additional paid services. The agreed audio scope is direct WebRTC squad voice with at most four participants, without a dedicated media server or paid audio service. See [voice-room scope](voice-rooms.md); direct connectivity remains a feasibility test. Finish Fallout 76 before implementing another game.
 
 ## Installed integration evidence — source inspection, 2026-10-15
 
@@ -38,4 +38,4 @@ Message reads check conversation participation. Sending applies privacy/block ch
 4. Gamertag search, invitations, guild membership/roles and persistent features.
 5. Media/moderation, audio feasibility, then other-game integration after Fallout 76 is stable.
 
-Open decisions: tag visibility, detailed guild mapping, retention/deletion, session exchange, hosting capacity, audio and distribution/asset licensing. Configuration defaults do not resolve these decisions.
+Open decisions: tag visibility, detailed guild mapping, retention/deletion, session exchange, hosting capacity, voice connectivity details and distribution/asset licensing. The four-person direct-audio direction is agreed; its implementation is still pending. Configuration defaults do not resolve the remaining decisions.
