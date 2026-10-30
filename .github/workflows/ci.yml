@@ -37,10 +37,16 @@ jobs:
           node --check client/preload.js
           node --check client/core/runtime-config.js
           node --check client/games/fallout76.js
+          node --check client/core/sngine5-chat.js
+          node --check client/core/message-view.js
 
       - name: Test runtime configuration
         working-directory: client
         run: npm run test:config
+
+      - name: Test Sngine 5 message compatibility
+        working-directory: client
+        run: npm run test:chat
 
       - name: Test embedded chat service
         working-directory: client

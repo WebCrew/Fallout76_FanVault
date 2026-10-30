@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0-step8 — Sngine 5.0 compatibility candidate
+
+- Verified the installed Sngine 5.0 chat/API against the owner's original package.
+- Add a credential-free message adapter and safe shared renderer for original text, replies, attachment metadata, reactions and call history.
+- Prepare cursor/offset handling and overlap-safe history merging; account for missing top-level cursors in installed API responses.
+- Keep page identities distinct and redact protected content; do not load media sources automatically.
+- Open web links externally and prevent remote navigation inside the overlay.
+- Add compatibility/rendering tests and update architecture, limitations and Windows acceptance instructions.
+
+No live login/chat transport or new remote actions yet. Net-Twin's production files, database and existing security hooks are unchanged. The step-8 candidate supersedes the unaccepted step-7 test build; previous test ZIPs are retained.
+
 ## 0.5.0-step7 — candidate
 
 - Separate runtime settings and Fallout 76 channel/demo configuration.

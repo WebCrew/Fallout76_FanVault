@@ -1,6 +1,6 @@
 {
   "name": "fanvault-client",
-  "version": "0.5.0-step7",
+  "version": "0.5.0-step8",
   "description": "FanVault companion overlay for Fallout 76",
   "author": "WebCrew",
   "main": "main.js",
@@ -8,7 +8,8 @@
     "start": "electron .",
     "build:win": "electron-builder --win portable",
     "test:local-server": "node local-server.test.js",
-    "test:config": "node --test core/runtime-config.test.js core/startup.test.js"
+    "test:config": "node --test core/runtime-config.test.js core/startup.test.js",
+    "test:chat": "node --test core/sngine5-chat.test.js"
   },
   "dependencies": {
     "ws": "^8.18.3"
@@ -33,7 +34,9 @@
       "style.css",
       "package.json",
       "core/runtime-config.js",
-      "games/fallout76.js"
+      "games/fallout76.js",
+      "core/sngine5-chat.js",
+      "core/message-view.js"
     ],
     "win": {
       "artifactName": "FanVault-${version}-portable.${ext}",

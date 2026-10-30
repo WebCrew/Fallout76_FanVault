@@ -1,4 +1,6 @@
-# Known limitations — step 7
+# Known limitations — step 8
+
+The Sngine 5.0 adapter and renderer handle updated message formats. Live login, retrieval, sending and chat actions are not connected. Attachment metadata is recognised, but private media is not loaded or transferred. See the [upgrade audit](sngine-5-upgrade.md).
 
 | Feature | Status |
 | --- | --- |

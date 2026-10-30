@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen } = require("electron");
+const { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen, shell } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const { startLocalServer } = require("./local-server");
@@ -129,6 +129,16 @@ function createWindow() {
 
   win.setAlwaysOnTop(true, "screen-saver");
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    try {
+      const target = new URL(url);
+      if (["https:", "http:"].includes(target.protocol) && !target.username && !target.password) {
+        shell.openExternal(target.href).catch(() => {});
+      }
+    } catch (_error) { /* Reject malformed and non-web URLs. */ }
+    return { action: "deny" };
+  });
+  win.webContents.on("will-navigate", (event) => event.preventDefault());
   win.loadFile(path.join(__dirname, "index.html"));
   win.once("ready-to-show", () => win.showInactive());
 }

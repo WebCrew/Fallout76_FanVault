@@ -54,18 +54,16 @@ localStorage.setItem("fanvault_client_id", clientId);
 function escapeHtml(str = "") {
   return str.replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': '&quot;' }[char] || char));
 }
-function createLinkPreview(url) {
-  const safeUrl = escapeHtml(url);
-  return `<a class="link-preview" href="${safeUrl}" target="_blank" rel="noreferrer">${safeUrl}</a>`;
-}
 function normalizeMessage(raw) {
+  if (raw.message_id) raw = window.FanVaultSngineChat.normalizeMessage(raw);
   return {
+    ...raw,
     type: raw.type || "chat",
     channel: channels.includes(raw.channel) ? raw.channel : "Lobby",
     from: raw.from || raw.meta || "Guild",
     to: raw.to || null,
     meta: raw.meta || `${raw.from || "Guild"} · now`,
-    text: raw.text || "",
+    text: typeof raw.text === "string" ? raw.text : "",
     className: raw.className || ""
   };
 }
@@ -88,13 +86,7 @@ function renderMessages() {
   messages.innerHTML = "";
   const entries = currentContext.type === "channel" ? (channelMessages[currentContext.key] || []) : (dmMessages[currentContext.key] || []);
   entries.forEach((entry) => {
-    const article = document.createElement("article");
-    article.className = `message ${entry.className || ""}`.trim();
-    const urlMatch = entry.text.match(/https?:\/\/\S+/i);
-    let content = escapeHtml(entry.text).replace(/\n/g, "<br>");
-    if (urlMatch) content += `<br>${createLinkPreview(urlMatch[0])}`;
-    article.innerHTML = `<span class="message-meta">${escapeHtml(entry.meta)}</span><p>${content}</p>`;
-    messages.appendChild(article);
+    window.FanVaultMessageView.appendMessage(document, messages, entry);
   });
   messages.scrollTop = messages.scrollHeight;
 }

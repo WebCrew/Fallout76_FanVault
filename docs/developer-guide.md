@@ -28,6 +28,6 @@ Remove-Item Env:FANVAULT_ENV
 
 Common settings live in `client/core`; game data in `client/games/fallout76.js`. IPC returns only the constructed public config, never the entire environment or secrets. Update the builder's runtime file allowlist for new modules.
 
-Development candidates use `major.minor.patch-stepN`; step 7 is `0.5.0-step7`. Align package and lockfile metadata. API versioning is a separate future contract.
+Development candidates use `major.minor.patch-stepN`; step 8 is `0.5.0-step8`. Align package and lockfile metadata. API versioning is a separate future contract.
 
 Each milestone uses a branch/PR, local checks, CI, Windows build and manual Windows/game acceptance. Merge only with explicit acceptance. Afterwards preserve a versioned Windows ZIP in the local backup folder; do not overwrite/delete older backups. Client builds do not deploy to Net-Twin.

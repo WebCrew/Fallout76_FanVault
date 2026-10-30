@@ -1,6 +1,6 @@
 # FanVault — Fallout 76 Clan Companion
 
-Windows overlay prototype, **v0.5.0-step7**. This step prepares configuration and documentation for Net-Twin integration. It does not connect to Net-Twin yet.
+Windows overlay prototype, **v0.5.0-step8**. This candidate includes message-format handling for the installed Sngine 5.0 chat, while preserving the overlay foundation. It does not connect to Net-Twin yet.
 
 On first launch, a small icon appears near the centre of the primary display's work area. Click to open the chat interface, drag the icon or the panel title to reposition it, and resize using the lower-right grip. Position and size are saved; existing placement takes precedence over the first-run centre position.
 
@@ -23,6 +23,7 @@ With Node.js 24, open client/ and run:
 ```sh
 npm ci
 npm run test:config
+npm run test:chat
 npm run test:local-server
 npm start
 ```

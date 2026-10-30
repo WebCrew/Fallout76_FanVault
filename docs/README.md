@@ -1,6 +1,6 @@
 # FanVault documentation
 
-Current candidate: v0.5.0-step7. Working prototype and planned integration are distinguished throughout.
+Current candidate: v0.5.0-step8. Working prototype and planned integration are distinguished throughout.
 
 - [Player guide](player-guide.md)
 - [Guild leader guide](guild-leader-guide.md)
@@ -13,3 +13,5 @@ Current candidate: v0.5.0-step7. Working prototype and planned integration are d
 - [API status](api/README.md)
 - [Legacy WebSocket protocol](api/websocket.md)
 - [Changelog](releases/changelog.md)
+
+- [Sngine 5.0 audit and compatibility](sngine-5-upgrade.md)

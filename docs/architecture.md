@@ -1,6 +1,8 @@
 # Architecture and decisions
 
-## Current candidate: 0.5.0-step7
+## Current candidate: 0.5.0-step8
+
+Current integration baseline: installed Sngine 5.0, inspected on 2026-10-30. See the [upgrade audit](sngine-5-upgrade.md) for verified changes, pagination limitations and page/group distinctions. The client includes a Sngine 5 message adapter and safe renderer; authenticated transport is still unimplemented. The earlier 4.5 inspection below is historical context.
 
 Electron main controls windows, placement, resizing and native image selection. The context-isolated preload exposes a limited IPC bridge. The renderer reads public runtime configuration through that bridge. `client/core/runtime-config.js` validates settings; `client/games/fallout76.js` supplies Fallout 76 labels, channels and sample messages. Some Fallout-specific HTML and sample members remain; this is a small configuration boundary, not a finished plugin platform.
 
