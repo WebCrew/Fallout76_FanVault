@@ -13,6 +13,7 @@ Current candidate: v0.5.0-step8. Working prototype and planned integration are d
 - [Testing and acceptance](testing.md)
 - [Troubleshooting](troubleshooting.md)
 - [API status](api/README.md)
+- [Browser sign-in prototype](browser-auth.md)
 - [Legacy WebSocket protocol](api/websocket.md)
 - [Changelog](releases/changelog.md)
 

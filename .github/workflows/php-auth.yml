@@ -1,0 +1,39 @@
+name: PHP auth prototype
+
+on:
+  pull_request:
+    paths:
+      - "server/php/**"
+      - ".github/workflows/php-auth.yml"
+  push:
+    branches: [main]
+    paths:
+      - "server/php/**"
+      - ".github/workflows/php-auth.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-auth:
+    name: Browser authorization
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Ensure PDO SQLite is available
+        run: |
+          if ! php -r 'exit(extension_loaded("pdo_sqlite") ? 0 : 1);'; then
+            sudo apt-get update
+            sudo apt-get install -y php-cli php-sqlite3
+          fi
+          php -r 'exit(extension_loaded("pdo_sqlite") ? 0 : 1);'
+      - name: Check PHP syntax
+        run: |
+          php -l server/php/DeviceAuthorization.php
+          php -l server/php/tests/device-authorization.php
+          php -l server/php/tests/browser-fixture.php
+      - name: Test browser authorization over loopback
+        run: node --test server/php/tests/browser-flow.test.js
