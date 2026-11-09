@@ -42,7 +42,11 @@ final class DeviceAuthorization
                 token_hash TEXT PRIMARY KEY, subject TEXT NOT NULL, session_ref TEXT NOT NULL,
                 expires INTEGER NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS fv_session_expiry ON fv_sessions(expires);'
+            CREATE INDEX IF NOT EXISTS fv_session_expiry ON fv_sessions(expires);
+            CREATE TABLE IF NOT EXISTS fv_rate (
+                bucket TEXT PRIMARY KEY, expires INTEGER NOT NULL, attempts INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS fv_rate_expiry ON fv_rate(expires);'
         );
     }
 
@@ -127,6 +131,11 @@ final class DeviceAuthorization
 
     public function subject(string $token): ?string
     {
+        return $this->session($token)['subject'] ?? null;
+    }
+
+    public function session(string $token): ?array
+    {
         if (!self::validToken($token)) return null;
         $hash = self::digest($token);
         $row = $this->query('SELECT subject, session_ref, expires FROM fv_sessions WHERE token_hash = ?', [$hash])
@@ -136,12 +145,28 @@ final class DeviceAuthorization
             $this->revoke($token);
             return null;
         }
-        return $row['subject'];
+        return $row;
     }
 
     public function revoke(string $token): void
     {
         if (self::validToken($token)) $this->query('DELETE FROM fv_sessions WHERE token_hash = ?', [self::digest($token)]);
+    }
+
+    public function allow(string $key, int $limit, int $seconds = 60): bool
+    {
+        return $this->write(function () use ($key, $limit, $seconds): bool {
+            $now = $this->now();
+            $this->query('DELETE FROM fv_rate WHERE expires <= ?', [$now]);
+            $bucket = hash('sha256', $key);
+            $attempts = $this->query('SELECT attempts FROM fv_rate WHERE bucket = ?', [$bucket])->fetchColumn();
+            if ($attempts !== false && (int) $attempts >= $limit) return false;
+            $this->query(
+                'INSERT INTO fv_rate VALUES (?, ?, 1) ON CONFLICT(bucket) DO UPDATE SET attempts = attempts + 1',
+                [$bucket, $now + $seconds]
+            );
+            return true;
+        });
     }
 
     private function now(): int { return ($this->clock)(); }

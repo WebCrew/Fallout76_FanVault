@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, codex/fanvault-project-foundation]
 
 permissions:
   contents: read
@@ -39,6 +39,7 @@ jobs:
           node --check client/games/fallout76.js
           node --check client/core/sngine5-chat.js
           node --check client/core/message-view.js
+          node --check client/core/nettwin-login.js
 
       - name: Test runtime configuration
         working-directory: client

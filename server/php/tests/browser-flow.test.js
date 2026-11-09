@@ -4,9 +4,10 @@ const { randomBytes } = require("node:crypto");
 const { spawn, execFileSync } = require("node:child_process");
 const { once } = require("node:events");
 const { createServer } = require("node:net");
-const { mkdtemp, unlink, rmdir } = require("node:fs/promises");
+const { mkdtemp, unlink, rmdir, writeFile } = require("node:fs/promises");
 const { join } = require("node:path");
 const { tmpdir } = require("node:os");
+const { createNetTwinLogin } = require("../../../client/core/nettwin-login");
 
 const php = process.env.FANVAULT_TEST_PHP || "php";
 const phpFlags = JSON.parse(process.env.FANVAULT_TEST_PHP_ARGS || "[]");
@@ -16,7 +17,7 @@ test("private PHP auth store enforces expiry, revocation and one-time exchange",
   assert.match(output, /PASS session expires without refresh/);
 });
 
-test("browser approval and desktop exchange work across separate HTTP requests", { timeout: 15000 }, async t => {
+test("desktop login uses real HTTP handlers with a synthetic Sngine session", { timeout: 20000 }, async t => {
   const listener = createServer().listen(0, "127.0.0.1");
   await once(listener, "listening");
   const port = listener.address().port;
@@ -33,7 +34,7 @@ test("browser approval and desktop exchange work across separate HTTP requests",
   t.after(async () => {
     processHandle.kill();
     await stopped;
-    for (const suffix of ["", "-journal", "-shm", "-wal"]) {
+    for (const suffix of ["", "-journal", "-shm", "-wal", ".revoked"]) {
       await unlink(database + suffix).catch(error => { if (error.code !== "ENOENT") throw error; });
     }
     await rmdir(directory);
@@ -46,28 +47,48 @@ test("browser approval and desktop exchange work across separate HTTP requests",
     });
   });
 
-  const call = (path, options) => fetch(origin + path, { ...options, redirect: "error", signal: AbortSignal.timeout(3000) });
-  const post = (path, body) => call(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  assert.equal((await call("/approve")).status, 401);
-  assert.equal((await call("/me")).status, 401);
-  const flow = await (await post("/device", {})).json();
-  assert.match(flow.device_code, /^[A-Za-z0-9_-]{43}$/);
-  const browser = { Cookie: `fv_fixture=${key}` };
-  const html = await (await call("/approve", { headers: browser })).text();
-  const csrf = html.match(/name="csrf" value="([a-f0-9]{64})"/)[1];
-  assert.ok(!html.includes(flow.device_code));
-  const form = (originValue, csrfValue) => call("/approve", {
-    method: "POST", headers: { ...browser, Origin: originValue },
-    body: new URLSearchParams({ user_code: flow.user_code, csrf: csrfValue, user_id: "999" })
+  const call = (action, options) => fetch(origin + "/index.php?action=" + action, { ...options, redirect: "error", signal: AbortSignal.timeout(3000) });
+  const browser = { Cookie: `c_user=42; xs=${key}` };
+  assert.match(await (await call("approve")).text(), /zuerst bei Net-Twin/);
+  assert.equal((await call("me")).status, 401);
+  const changes = new (require("node:events").EventEmitter)();
+  let opened = "";
+  let bearer;
+  const login = createNetTwinLogin({
+    baseUrl: origin, openBrowser: url => { opened = url; },
+    onChange: state => changes.emit(state.phase, state),
+    request: (url, options) => {
+      if (options.headers.Authorization) bearer = options.headers.Authorization;
+      return fetch(url, options);
+    }
   });
-  assert.equal((await form("https://other.invalid", csrf)).status, 403);
-  assert.equal((await form(origin, "wrong")).status, 403);
-  assert.equal((await form(origin, csrf)).status, 200);
-  const result = await (await post("/exchange", { device_code: flow.device_code })).json();
-  const credentials = { Authorization: `Bearer ${result.access_token}` };
-  const me = await (await call("/me", { headers: credentials })).json();
-  assert.deepEqual(me, { user_id: "42", display_name: "Test Player" });
-  assert.equal((await post("/exchange", { device_code: flow.device_code })).status, 400);
-  assert.equal((await call("/logout", { method: "POST", headers: credentials })).status, 200);
-  assert.equal((await call("/me", { headers: credentials })).status, 401);
+  t.after(() => login.dispose());
+  async function approve() {
+    const ready = once(changes, "authenticated", { signal: AbortSignal.timeout(7000) });
+    // Prevent an unhandled rejection if an earlier assertion fails.
+    ready.catch(() => {});
+    const flow = await login.start();
+    assert.deepEqual(Object.keys(flow).sort(), ["code", "phase"]);
+    assert.equal(opened, origin + "/index.php?action=approve");
+    const html = await (await call("approve", { headers: browser })).text();
+    const csrf = html.match(/name="csrf" value="([a-f0-9]{64})"/)[1];
+    const form = (originValue, csrfValue, cookie = browser.Cookie) => call("approve", {
+      method: "POST", headers: { Cookie: cookie, Origin: originValue },
+      body: new URLSearchParams({ user_code: flow.code, csrf: csrfValue, user_id: "999", decision: "approve" })
+    });
+    assert.equal((await form("https://other.invalid", csrf)).status, 403);
+    assert.equal((await form(origin, "wrong")).status, 403);
+    assert.equal((await form(origin, csrf, browser.Cookie + "; test_impersonation=1")).status, 401);
+    assert.equal((await form(origin, csrf)).status, 200);
+    const [state] = await ready;
+    assert.deepEqual(state, { phase: "authenticated", user: { id: "42", name: "Test Player" } });
+    assert.ok(bearer);
+  }
+  await approve();
+  const firstToken = bearer;
+  assert.deepEqual(await login.signOut(), { phase: "idle" });
+  assert.equal((await call("me", { headers: { Authorization: firstToken } })).status, 401);
+  await approve();
+  await writeFile(database + ".revoked", "");
+  assert.deepEqual(await login.refresh(), { phase: "error", error: "session_ended" });
 });

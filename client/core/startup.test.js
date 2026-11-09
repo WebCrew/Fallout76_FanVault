@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const { loadRuntimeConfig } = require("./runtime-config");
+const { createNetTwinLogin } = require("./nettwin-login");
 
 // Exercise main-process wiring without opening windows or modifying the user's layout.
 async function boot(environment, saved) {
@@ -24,7 +25,7 @@ async function boot(environment, saved) {
     getBounds() { return this.bounds; }
     setBounds(bounds) { this.bounds = { ...this.bounds, ...bounds }; }
     setPosition(x, y) { this.setBounds({ x, y }); }
-    webContents = { send() {}, setWindowOpenHandler: handler => { this.openHandler = handler; }, on() {} };
+    webContents = { mainFrame: {}, send() {}, setWindowOpenHandler: handler => { this.openHandler = handler; }, on() {} };
   }
   const electron = {
     app: { getPath: () => "unused-test-profile", requestSingleInstanceLock: () => true,
@@ -41,6 +42,7 @@ async function boot(environment, saved) {
     fs: { readFileSync() { if (!persisted) throw new Error("No saved layout"); return JSON.stringify(persisted); },
       writeFileSync(_file, data) { persisted = JSON.parse(data); } },
     "./core/runtime-config": { loadRuntimeConfig: () => loadRuntimeConfig({ FANVAULT_ENV: environment }) },
+    "./core/nettwin-login": { createNetTwinLogin },
     "./local-server": { async startLocalServer() { serverStarts++; return { async close() {} }; } }
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../main.js"), "utf8"), {
@@ -70,6 +72,14 @@ test("first-run launcher centres; drag and resize survive collapse and a new lau
   const layout = reopened.handlers.get("overlay:set-expanded")(null, true);
   assert.equal(layout.panelWidth, 620);
   assert.equal(layout.panelHeight, 780);
+});
+
+test("login IPC refuses other windows and non-main frames", async () => {
+  const app = await boot("development");
+  const sender = app.windows[0].webContents;
+  assert.equal(app.handlers.get("auth:state")({ sender, senderFrame: sender.mainFrame }).phase, "unavailable");
+  assert.equal(app.handlers.get("auth:start")({ sender: {}, senderFrame: sender.mainFrame }).phase, "unavailable");
+  assert.equal(app.handlers.get("auth:start")({ sender, senderFrame: {} }).phase, "unavailable");
 });
 
 test("production boots the overlay without starting the demo service", async () => {

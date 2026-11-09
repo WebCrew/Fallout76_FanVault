@@ -12,66 +12,29 @@ if (PHP_SAPI !== 'cli-server' || ($_SERVER['REMOTE_ADDR'] ?? '') !== '127.0.0.1'
 }
 
 require __DIR__ . '/../DeviceAuthorization.php';
+require __DIR__ . '/../NetTwinIdentity.php';
+require __DIR__ . '/../AuthHttp.php';
 use FanVault\DeviceAuthorization;
+use FanVault\NetTwinIdentity;
+use FanVault\AuthHttp;
 
-header('Cache-Control: no-store');
-header('Referrer-Policy: no-referrer');
-header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; form-action 'self'");
-header('X-Content-Type-Options: nosniff');
-$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
+foreach (AuthHttp::headers() as $name => $value) header($name . ': ' . $value);
 $binding = hash('sha256', $key);
-$auth = new DeviceAuthorization(new PDO('sqlite:' . getenv('FANVAULT_FIXTURE_DB')),
-    static fn(string $id, string $ref): bool => $id === '42' && hash_equals($binding, $ref));
-
-function answer(int $status, array $data): never {
-    http_response_code($status);
-    header('Content-Type: application/json');
-    echo json_encode($data, JSON_THROW_ON_ERROR);
-    exit;
-}
-
-if ($path === '/approve') {
-    $cookie = $_COOKIE['fv_fixture'] ?? '';
-    if (!is_string($cookie) || !hash_equals($key, $cookie)) answer(401, ['error' => 'login_required']);
-    $csrf = hash_hmac('sha256', 'browser-confirmation', $key);
-    if ($method === 'GET') {
-        header('Content-Type: text/html; charset=utf-8');
-        echo '<!doctype html><title>FanVault test approval</title><h1>Confirm sign-in as Test Player</h1>'
-            . '<form method="post"><label>Code shown in the app <input name="user_code" required></label>'
-            . '<input type="hidden" name="csrf" value="' . $csrf . '"><button>Approve</button></form>';
-        exit;
-    }
-    if ($method !== 'POST' || ($_SERVER['HTTP_ORIGIN'] ?? '') !== $origin
-        || !is_string($_POST['csrf'] ?? null) || !hash_equals($csrf, $_POST['csrf'])) {
-        answer(403, ['error' => 'invalid_browser_action']);
-    }
-    $code = $_POST['user_code'] ?? null;
-    if (!is_string($code) || !$auth->approve($code, '42', $binding)) answer(400, ['error' => 'invalid_code']);
-    answer(200, ['status' => 'approved']);
-}
-
-if ($path === '/device' && $method === 'POST') {
-    if (($_SERVER['CONTENT_TYPE'] ?? '') !== 'application/json') answer(415, ['error' => 'invalid_content_type']);
-    answer(200, $auth->start());
-}
-if ($path === '/exchange' && $method === 'POST') {
-    if (($_SERVER['CONTENT_TYPE'] ?? '') !== 'application/json') answer(415, ['error' => 'invalid_content_type']);
-    $body = json_decode(file_get_contents('php://input', false, null, 0, 512), true);
-    $code = $body['device_code'] ?? null;
-    if (!is_string($code)) answer(400, ['error' => 'invalid_grant']);
-    $result = $auth->exchange($code);
-    answer(isset($result['error']) ? 400 : 200, $result);
-}
-$bearer = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-$token = str_starts_with($bearer, 'Bearer ') ? substr($bearer, 7) : '';
-if ($path === '/me' && $method === 'GET') {
-    $subject = $auth->subject($token);
-    if ($subject === null) answer(401, ['error' => 'unauthorized']);
-    answer(200, ['user_id' => $subject, 'display_name' => 'Test Player']);
-}
-if ($path === '/logout' && $method === 'POST') {
-    $auth->revoke($token);
-    answer(200, ['status' => 'revoked']);
-}
-answer(404, ['error' => 'not_found']);
+$database = getenv('FANVAULT_FIXTURE_DB');
+$identity = new NetTwinIdentity(static fn(string $id, string $ref): ?string =>
+    !is_file($database . '.revoked') && $id === '42' && hash_equals($binding, $ref) ? 'Test Player' : null);
+$auth = new DeviceAuthorization(new PDO('sqlite:' . $database), $identity->isActive(...));
+$browser = $identity->browser((object) [
+    '_logged_in' => isset($_COOKIE['xs']) && is_string($_COOKIE['xs']) && hash_equals($key, $_COOKIE['xs']),
+    '_login_as' => isset($_COOKIE['test_impersonation']),
+    '_is_banned' => false, '_data' => ['user_id' => '42', 'active_session_token' => $key]
+], $_COOKIE);
+$csrf = $browser === null ? '' : hash_hmac('sha256', 'browser-confirmation', $key);
+$http = new AuthHttp($auth, $identity, $origin);
+[$status, $type, $body] = $http->handle($_SERVER['REQUEST_METHOD'], $_GET['action'] ?? '',
+    $_SERVER['HTTP_ORIGIN'] ?? '', $_SERVER['CONTENT_TYPE'] ?? '',
+    file_get_contents('php://input', false, null, 0, 1025) ?: '', $_POST,
+    $_SERVER['HTTP_AUTHORIZATION'] ?? '', 'loopback-fixture', $browser, $csrf);
+http_response_code($status);
+header('Content-Type: ' . $type);
+echo $body;
