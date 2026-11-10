@@ -24,14 +24,20 @@ function loadRuntimeConfig(env = process.env) {
   if (gameId !== fallout76.id) {
     throw new Error("Only the fallout76 game configuration is currently supported.");
   }
+  const apiBaseUrl = parseApiBaseUrl(env.FANVAULT_API_BASE_URL, environment);
+  if (environment === "production" && apiBaseUrl && new URL(apiBaseUrl).origin !== "https://net-twin.de") {
+    throw new Error("Production FanVault sign-in requires net-twin.de.");
+  }
+  const loginEnabled = Boolean(apiBaseUrl && environment !== "development");
+  const demo = environment !== "production" && !loginEnabled;
   return {
     environment,
     game: fallout76,
-    // An address is configuration only: authenticated API transport is not implemented yet.
-    apiBaseUrl: parseApiBaseUrl(env.FANVAULT_API_BASE_URL, environment),
+    apiBaseUrl,
+    loginEnabled,
     transport: {
-      mode: environment === "production" ? "unavailable" : "local-prototype",
-      localChatUrl: environment === "production" ? null : "ws://127.0.0.1:3001"
+      mode: demo ? "local-prototype" : "unavailable",
+      localChatUrl: demo ? "ws://127.0.0.1:3001" : null
     }
   };
 }

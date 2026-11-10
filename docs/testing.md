@@ -2,7 +2,9 @@
 
 CI checks JavaScript syntax, config boundaries and the existing embedded-service message/occupied-port test. The Windows workflow builds the portable EXE. Neither authenticates against Net-Twin or proves game compatibility.
 
-## Manual Windows checklist — step 7
+## Manual Windows checklist — step 8
+
+Run `npm run test:chat` for Sngine 5 fixtures: original text versus vendor HTML, page identity, protected content, multiple attachment metadata, reply previews, call logs, reactions, pagination fallback and large/overlapping IDs. These tests do not use real private messages or prove working remote actions. Message-format checks and the shared renderer are integrated into this candidate; no live account is connected yet.
 
 - Start without development tools or a console. Opened panel clearly labels demo data and no Net-Twin connection.
 - With a fresh app profile, confirm the icon starts near the primary work area's centre. Do not delete an existing layout to test this; existing placement must be retained.

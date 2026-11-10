@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const { loadRuntimeConfig } = require("./runtime-config");
+const { createNetTwinLogin } = require("./nettwin-login");
 
 // Exercise main-process wiring without opening windows or modifying the user's layout.
 async function boot(environment, saved) {
@@ -13,6 +14,7 @@ async function boot(environment, saved) {
   const area = { x: 100, y: 50, width: 1920, height: 1040 };
   let serverStarts = 0;
   let persisted = saved;
+  const externalUrls = [];
   class Window {
     constructor(options) { this.bounds = { ...options }; windows.push(this); }
     setAlwaysOnTop() {}
@@ -23,12 +25,13 @@ async function boot(environment, saved) {
     getBounds() { return this.bounds; }
     setBounds(bounds) { this.bounds = { ...this.bounds, ...bounds }; }
     setPosition(x, y) { this.setBounds({ x, y }); }
-    webContents = { send() {} };
+    webContents = { mainFrame: {}, send() {}, setWindowOpenHandler: handler => { this.openHandler = handler; }, on() {} };
   }
   const electron = {
     app: { getPath: () => "unused-test-profile", requestSingleInstanceLock: () => true,
       on() {}, quit() {}, whenReady: () => Promise.resolve() },
     BrowserWindow: Window,
+    shell: { async openExternal(url) { externalUrls.push(url); } },
     dialog: { showErrorBox() { throw new Error("Unexpected configuration error"); } },
     globalShortcut: { register() {} },
     ipcMain: { handle: (name, fn) => handlers.set(name, fn), on: (name, fn) => listeners.set(name, fn) },
@@ -39,14 +42,15 @@ async function boot(environment, saved) {
     fs: { readFileSync() { if (!persisted) throw new Error("No saved layout"); return JSON.stringify(persisted); },
       writeFileSync(_file, data) { persisted = JSON.parse(data); } },
     "./core/runtime-config": { loadRuntimeConfig: () => loadRuntimeConfig({ FANVAULT_ENV: environment }) },
+    "./core/nettwin-login": { createNetTwinLogin },
     "./local-server": { async startLocalServer() { serverStarts++; return { async close() {} }; } }
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../main.js"), "utf8"), {
     require(name) { if (!(name in modules)) throw new Error(`Unexpected import ${name}`); return modules[name]; },
-    __dirname: path.join(__dirname, ".."), process: { platform: "win32" }
+    __dirname: path.join(__dirname, ".."), process: { platform: "win32" }, URL
   });
   await new Promise(resolve => setImmediate(resolve));
-  return { handlers, listeners, windows, serverStarts, saved: () => persisted };
+  return { handlers, listeners, windows, serverStarts, saved: () => persisted, externalUrls };
 }
 
 test("first-run launcher centres; drag and resize survive collapse and a new launch", async () => {
@@ -70,10 +74,29 @@ test("first-run launcher centres; drag and resize survive collapse and a new lau
   assert.equal(layout.panelHeight, 780);
 });
 
+test("login IPC refuses other windows and non-main frames", async () => {
+  const app = await boot("development");
+  const sender = app.windows[0].webContents;
+  assert.equal(app.handlers.get("auth:state")({ sender, senderFrame: sender.mainFrame }).phase, "unavailable");
+  assert.equal(app.handlers.get("auth:start")({ sender: {}, senderFrame: sender.mainFrame }).phase, "unavailable");
+  assert.equal(app.handlers.get("auth:start")({ sender, senderFrame: {} }).phase, "unavailable");
+});
+
 test("production boots the overlay without starting the demo service", async () => {
   const app = await boot("production", { x: 150, y: 100 });
   assert.equal(app.serverStarts, 0);
   assert.equal(app.windows.length, 1);
   assert.equal(app.windows[0].bounds.x, 150);
   assert.equal(app.handlers.get("app:get-config")().transport.localChatUrl, null);
+});
+
+test("chat links cannot open local files or navigate the overlay", async () => {
+  const app = await boot("production");
+  const open = app.windows[0].openHandler;
+  for (const url of ["file:///C:/Windows/", "javascript:alert(1)", "https://user:secret@example.invalid/"]) {
+    assert.equal(open({ url }).action, "deny");
+  }
+  assert.equal(app.externalUrls.length, 0);
+  assert.equal(open({ url: "https://example.invalid/guide" }).action, "deny");
+  assert.deepEqual(app.externalUrls, ["https://example.invalid/guide"]);
 });

@@ -1,4 +1,6 @@
-# Known limitations — step 7
+# Known limitations — step 9
+
+The browser sign-in flow works against a local fixture; live Net-Twin pilot deployment and verification are pending. Retrieval, sending and chat actions are not connected. Attachment metadata is recognised, but private media is not loaded or transferred. See the [upgrade audit](sngine-5-upgrade.md).
 
 | Feature | Status |
 | --- | --- |
@@ -11,9 +13,10 @@
 | Members, profiles, squads | Demo data; squad invite only local feedback |
 | Images | Local preview only, no delivery/storage |
 | Net-Twin text chat | Installed API found, not connected to FanVault |
-| Login, search, invitations, guild rights | Not integrated |
+| Net-Twin sign-in | Local client/server flow verified; live pilot not deployed |
+| Search, invitations, guild rights | Not integrated |
 | Live audio | Not implemented; no paid provider configured by this step |
-| Future API address | Validated but unused |
-| Production mode | Chat unavailable, demo display remains; not a production release |
+| API address | Required to activate sign-in; production origin restricted to net-twin.de |
+| Production mode | Demo transport disabled; live chat unavailable |
 
 The separate Node server has broad CORS and no real authentication/persistence. The embedded service may reuse an occupied development port. Neither is a secure community backend. CI does not prove Windows/game compatibility, full security or licence compliance.

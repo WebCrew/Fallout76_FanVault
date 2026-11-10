@@ -405,6 +405,8 @@ button {
 .member-state.offline { color: var(--offline); }
 .menu-card { width: 300px; }
 .menu-action { width: 100%; text-align: left; }
+#loginPanel [hidden] { display: none; }
+#loginCode { margin: 0; overflow-wrap: anywhere; }
 .menu-action-danger { color: #ffb7b7; }
 .menu-action-danger:hover { background: rgba(190, 70, 78, 0.24); }
 
@@ -487,3 +489,7 @@ button {
 }
 
 .prototype-notice { display: block; color: var(--muted); font-size: 10px; line-height: 1.4; margin-top: 4px; }
+
+.message-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-reply { margin: 4px 0; padding: 4px 8px; border-left: 2px solid var(--muted); color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.message-detail { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }

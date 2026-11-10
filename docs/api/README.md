@@ -1,6 +1,6 @@
 # FanVault API status
 
-No FanVault API is deployed or implemented in step 7. The configurable API address is preparation only. Add OpenAPI v1 alongside real endpoints and their permissions/errors, rather than document imaginary services.
+No FanVault API is deployed or implemented in step 8. The configurable API address is preparation only. Add OpenAPI v1 alongside real endpoints and their permissions/errors, rather than document imaginary services. The [Sngine 5 audit](../sngine-5-upgrade.md) documents the current installed interface and its response limitations.
 
 Target: secure Net-Twin session integration, approved profiles/game tags, search/invitations, guild rights and existing text chat. Player login differs from future developer credentials. Global Sngine secrets stay server-side.
 
