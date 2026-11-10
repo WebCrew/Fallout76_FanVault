@@ -1,6 +1,8 @@
 # Browser sign-in — Step 9 pilot
 
-Step 9 connects the desktop sign-in controls, PHP HTTP handlers and an adapter for the installed Sngine 5.0 browser session. The full flow has been tested locally with a synthetic identity. The server files are not deployed to Net-Twin.
+Step 9 connects the desktop sign-in controls, PHP HTTP handlers and an adapter for the installed Sngine 5.0 browser session. The full flow has been tested locally with a synthetic identity.
+
+On 10 November 2026 the login endpoint went live on Net-Twin for one designated test account. The production checks confirmed that HTTPS and the private SQLite store work, an unauthenticated visitor sees the browser approval page, foreign origins are rejected, and a device request cannot obtain an app session before approval. Sign-in and sign-out with the real test account are pending.
 
 ## Flow
 
@@ -35,5 +37,16 @@ The loopback HTTP fixture exercises the desktop sign-in module, browser form, ap
 3. Upload only `server/php/public/index.php` as `/nettwin/fanvault/index.php`. No Sngine file or Sngine database schema changes are required. The login endpoint creates its own private SQLite session store. Check HTTPS, origin/CSRF, session revocation, request-rate limits and absence of public access to private files before using a real account.
 4. Start the Step 9 app with `FANVAULT_ENV=production` and `FANVAULT_API_BASE_URL=https://net-twin.de/fanvault`. Open Settings → Sign in with Net-Twin. Confirm the displayed code in the system browser. The app stores its session only in memory; restarting it requires signing in again. Text chat, uploads, groups and search stay disabled at this stage.
 5. Test with the designated Net-Twin account and verify that an account outside the pilot cannot authorize. Test logout and revoked browser sessions. Before exposing protected game features, add the Fallout 76 gamertag gate and the approved search visibility rules.
+
+### Authorization forwarding on Net-Twin
+
+The shared hosting needed a rule in the FanVault directory's own `.htaccess` to pass the Authorization header to PHP. The following rule was verified on Net-Twin. The site-wide configuration was unchanged.
+
+```apache
+RewriteEngine On
+RewriteRule ^index\.php$ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+```
+
+Verify forwarding at the new endpoint before enabling it. The rule uses Apache's [rewrite environment variable flag](https://httpd.apache.org/docs/2.4/rewrite/flags.html#flag_e). It is only needed on hosts that omit the Authorization header from the PHP request.
 
 To roll back the pilot, take its own `index.php` out of service. Keep any private state for controlled cleanup; do not alter Sngine files or users.
