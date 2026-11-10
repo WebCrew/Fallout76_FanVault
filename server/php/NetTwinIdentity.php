@@ -19,10 +19,11 @@ final class NetTwinIdentity
     {
         return new self(static function (string $userId, string $digest) use ($db, $system, $pilotUsers): ?string {
             if (empty($system['system_live']) || !empty($system['viewer_ip_banned'])) return null;
-            $sql = 'SELECT u.user_name FROM users_sessions s JOIN users u ON u.user_id = s.user_id
-                    WHERE s.user_id = ? AND SHA2(s.session_token, 256) = ? AND u.user_banned = 0';
-            if (!empty($system['activation_enabled'])) $sql .= ' AND u.user_activated = 1';
-            if (!empty($system['users_approval_enabled'])) $sql .= ' AND u.user_approved = 1';
+            // Sngine stores these flags as ENUM labels; numeric comparisons use their positions.
+            $sql = "SELECT u.user_name FROM users_sessions s JOIN users u ON u.user_id = s.user_id
+                    WHERE s.user_id = ? AND SHA2(s.session_token, 256) = ? AND u.user_banned = '0'";
+            if (!empty($system['activation_enabled'])) $sql .= " AND u.user_activated = '1'";
+            if (!empty($system['users_approval_enabled'])) $sql .= " AND u.user_approved = '1'";
             $stmt = $db->prepare($sql . ' LIMIT 1');
             try {
                 $stmt->bind_param('ss', $userId, $digest);
