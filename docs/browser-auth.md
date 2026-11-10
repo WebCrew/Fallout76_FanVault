@@ -2,7 +2,7 @@
 
 Step 9 connects the desktop sign-in controls, PHP HTTP handlers and an adapter for the installed Sngine 5.0 browser session. The full flow has been tested locally with a synthetic identity.
 
-On 10 November 2026 the login endpoint went live on Net-Twin for one designated test account. The production checks confirmed that HTTPS and the private SQLite store work, an unauthenticated visitor sees the browser approval page, foreign origins are rejected, and a device request cannot obtain an app session before approval. Sign-in and sign-out with the real test account are pending.
+On 10 November 2026 the login endpoint went live on Net-Twin for one designated test account. The production checks confirmed that HTTPS and the private SQLite store work, an unauthenticated visitor sees the browser approval page, foreign origins are rejected, and a device request cannot obtain an app session before approval. The first sign-in with the designated account was confirmed in the Windows overlay.
 
 ## Flow
 

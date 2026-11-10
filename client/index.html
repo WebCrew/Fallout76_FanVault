@@ -191,17 +191,15 @@
     <button class="modal-close" data-close>&times;</button>
     <div class="popup-card">
       <h2>Settings</h2>
-      <section id="loginPanel" class="settings-list" aria-label="Net-Twin account">
-        <div class="setting-row"><span>Net-Twin</span><strong id="loginStatus" aria-live="polite">Checking sign-in</strong></div>
-        <p id="loginCode" hidden></p>
-        <div class="settings-list">
+      <div class="settings-list">
+        <section id="loginPanel" class="settings-list" aria-label="Net-Twin account">
+          <div class="setting-row"><span>Net-Twin</span><strong id="loginStatus" aria-live="polite">Checking sign-in</strong></div>
+          <p id="loginCode" hidden></p>
           <button class="menu-action" id="loginStart" hidden>Sign in with Net-Twin</button>
           <button class="menu-action" id="loginCancel" hidden>Cancel sign-in</button>
           <button class="menu-action" id="loginRefresh" hidden>Check session</button>
           <button class="menu-action" id="loginSignOut" hidden>Sign out of FanVault</button>
-        </div>
-      </section>
-      <div class="settings-list">
+        </section>
         <div class="setting-row"><span>Hotkey</span><strong>Ctrl + Shift + F</strong></div>
         <div class="setting-row"><span>Interaction</span><strong>Not implemented</strong></div>
         <div class="setting-row"><span>Exit</span><strong>Ctrl + Shift + Q</strong></div>
