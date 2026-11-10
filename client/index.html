@@ -164,7 +164,16 @@
     <button class="modal-close" data-close>&times;</button>
     <div class="popup-card">
       <h2>Members</h2>
-      <div class="member-list">
+      <div id="memberSearch" class="settings-list" hidden>
+        <form id="memberSearchForm" class="settings-list" hidden>
+          <label for="memberGamertag">Full Fallout 76 gamertag (PC)</label>
+          <input id="memberGamertag" maxlength="64" required autocomplete="off" spellcheck="false">
+          <button class="menu-action" type="submit">Search Net-Twin</button>
+        </form>
+        <p id="memberSearchStatus" role="status"></p>
+        <ul id="memberSearchResults" class="simple-links"></ul>
+      </div>
+      <div id="demoMembers" class="member-list">
         <div class="member-row"><span>RangerOne</span><span class="member-state online">Online</span></div>
         <div class="member-row"><span>AshMara</span><span class="member-state idle">Idle</span></div>
         <div class="member-row"><span>MothSix</span><span class="member-state online">Online</span></div>

@@ -31,6 +31,7 @@ module.exports = {
   windowTitle: "FanVault - Fallout 76 Clan Companion",
   launcherMark: "76",
   platforms: ["PC", "Xbox", "PlayStation"],
+  memberSearchPlatform: "PC",
   channels,
   channelDescriptions,
   demoMessages: channelMessages

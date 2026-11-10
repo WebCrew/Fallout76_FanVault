@@ -7,7 +7,7 @@ Festgehalten am 31. Oktober 2026 nach der Zusammenfassung des Projektinhabers. D
 - FanVault ist eine Windows-Overlay-App für Chat und Gilden, zunächst für Fallout 76.
 - Ein Net-Twin-Konto und der passende Fallout-76-Gamertag in den Net-Twin-Profileinstellungen sind für den echten Dienst erforderlich.
 - Net-Twin bleibt die zentrale Nutzer- und Gamertag-Datenbank. Keine separate FanVault-Registrierung, kein Zugriff auf Bethesda-Konten.
-- Mitspieler werden anhand ihres dort angegebenen Gamertags gesucht, auf Net-Twin und aus der App über dieselbe erlaubte Datenquelle. Spiel und Plattform müssen eindeutig zugeordnet sein.
+- Mitspieler werden anhand ihres dort angegebenen Gamertags gesucht, auf Net-Twin und aus der App über dieselbe erlaubte Datenquelle. Das Windows-Overlay verwendet für Fallout 76 das eigene PC-Profilfeld „Fallout76 Gamer Tag“.
 - Gamertags sind selbst angegeben und werden nicht als verifizierte Spielkonten dargestellt. Sichtbarkeitsregeln sind vor Freischaltung der Suche noch festzulegen.
 
 ## Gilde, Freunde und Vierergruppen

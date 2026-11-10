@@ -30,6 +30,7 @@ function createNetTwinLogin({ baseUrl, openBrowser, onChange = () => {}, request
     });
     if (response.status === 401) return { error: "unauthorized" };
     if (response.status === 429) return { error: "slow_down", interval: 10 };
+    if (action === "member-search" && response.status === 404) return { error: "search_unavailable" };
     if (!(response.headers.get("content-type") || "").startsWith("application/json")) throw new Error("Invalid API response");
     const result = await response.json();
     if (!result || typeof result !== "object" || (!response.ok && typeof result.error !== "string")) {
@@ -138,12 +139,38 @@ function createNetTwinLogin({ baseUrl, openBrowser, onChange = () => {}, request
       signingOut = false;
     }
   }
+  async function searchMembers(game, platform, tag) {
+    const token = access;
+    if (!token) return { error: "unauthorized" };
+    try {
+      const result = await api("member-search", { body: { game, platform, tag }, token });
+      if (access !== token) return { error: "unauthorized" };
+      if (result.error === "unauthorized") {
+        access = null;
+        publish({ phase: "error", error: "session_ended" });
+      }
+      if (typeof result.error === "string") return { error: result.error };
+      if (!Array.isArray(result.players) || result.players.length > 8) throw new Error("Invalid search response");
+      return {
+        players: result.players.map(({ user_id, username, gamertag }) => {
+          if (typeof user_id !== "string" || !/^[1-9][0-9]{0,19}$/.test(user_id)
+              || typeof username !== "string" || !username.trim() || username.length > 160
+              || typeof gamertag !== "string" || !gamertag.trim() || gamertag.length > 128) {
+            throw new Error("Invalid player");
+          }
+          return { id: user_id, username, gamertag };
+        })
+      };
+    } catch {
+      return { error: "search_unavailable" };
+    }
+  }
   function dispose() {
     pending?.abort();
     pending = null;
     access = null;
   }
-  return { state: () => state, start, cancel, refresh, signOut, dispose };
+  return { state: () => state, start, cancel, refresh, signOut, searchMembers, dispose };
 }
 
 module.exports = { createNetTwinLogin };

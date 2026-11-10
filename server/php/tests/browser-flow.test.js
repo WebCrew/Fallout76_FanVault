@@ -34,7 +34,7 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   t.after(async () => {
     processHandle.kill();
     await stopped;
-    for (const suffix of ["", "-journal", "-shm", "-wal", ".revoked"]) {
+    for (const suffix of ["", "-journal", "-shm", "-wal", ".revoked", ".no-tag"]) {
       await unlink(database + suffix).catch(error => { if (error.code !== "ENOENT") throw error; });
     }
     await rmdir(directory);
@@ -64,6 +64,11 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   assert.match(wrongAccountHtml, /nicht für den Test freigegeben/);
   assert.doesNotMatch(wrongAccountHtml, /href="\/signin"|name="user_code"/);
   assert.equal((await call("me")).status, 401);
+  const search = (query, headers = {}) => call("member-search", {
+    method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(query)
+  });
+  assert.equal((await search({ game: "fallout76", platform: "PC", tag: "Fixture Player" })).status, 401);
+  assert.equal((await search({}, { Origin: "https://other.invalid" })).status, 403);
   const changes = new (require("node:events").EventEmitter)();
   let opened = "";
   let bearer;
@@ -100,7 +105,17 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   }
   await approve();
   const firstToken = bearer;
+  assert.deepEqual(await login.searchMembers("fallout76", "PC", " fixture player "), {
+    players: [{ id: "43", username: "fixture-player", gamertag: "Fixture Player" }]
+  });
+  assert.deepEqual(await login.searchMembers("fallout76", "PC", "Fixture"), { players: [] });
+  assert.deepEqual(await login.searchMembers("fallout76", "Xbox", "Fixture Player"), { error: "invalid_search" });
+  assert.deepEqual(await login.searchMembers("other-game", "PC", "Fixture Player"), { error: "search_unavailable" });
+  await writeFile(database + ".no-tag", "");
+  assert.deepEqual(await login.searchMembers("fallout76", "PC", "Fixture Player"), { error: "gamertag_required" });
+  await unlink(database + ".no-tag");
   assert.deepEqual(await login.signOut(), { phase: "idle" });
+  assert.deepEqual(await login.searchMembers("fallout76", "PC", "Fixture Player"), { error: "unauthorized" });
   assert.equal((await call("me", { headers: { Authorization: firstToken } })).status, 401);
   await approve();
   await writeFile(database + ".revoked", "");

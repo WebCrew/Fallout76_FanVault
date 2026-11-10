@@ -8,5 +8,8 @@ return [
     // Generate locally on the host with bin2hex(random_bytes(32)); never commit it.
     'rate_key' => '',
     // Exact existing Net-Twin usernames approved for the pilot; empty disables service.
-    'pilot_users' => []
+    'pilot_users' => [],
+    // Map each game and platform to its dedicated searchable Sngine textbox field ID.
+    // Keep empty until the Net-Twin field mappings and visibility have been reviewed.
+    'member_search_fields' => []
 ];
