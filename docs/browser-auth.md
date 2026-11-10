@@ -7,7 +7,7 @@ On 10 November 2026 the login endpoint went live on Net-Twin for one designated 
 ## Flow
 
 1. The desktop client asks for a short-lived sign-in request. It keeps a random device secret in the main process and displays a separate confirmation code.
-2. The player opens the system browser, signs in at Net-Twin and enters the confirmation code shown in their own app. No password is typed into FanVault.
+2. The player signs in at Net-Twin in a separate tab, then selects **Weiter zur Code-Eingabe** on the original FanVault browser page. Already eligible users see the code form immediately. An existing session outside the pilot receives a separate message to switch to the designated account. The password is entered only on Net-Twin's sign-in page.
 3. A same-origin, CSRF-checked browser submission binds the pending request to the authenticated Net-Twin user/session. Browser code alone cannot obtain a desktop session.
 4. The desktop exchanges its device secret once for an expiring FanVault session. The server stores token digests and validates the underlying Net-Twin session on use. Sign-out revokes the app token.
 

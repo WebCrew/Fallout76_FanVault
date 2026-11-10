@@ -24,17 +24,18 @@ $database = getenv('FANVAULT_FIXTURE_DB');
 $identity = new NetTwinIdentity(static fn(string $id, string $ref): ?string =>
     !is_file($database . '.revoked') && $id === '42' && hash_equals($binding, $ref) ? 'Test Player' : null);
 $auth = new DeviceAuthorization(new PDO('sqlite:' . $database), $identity->isActive(...));
-$browser = $identity->browser((object) [
+$user = (object) [
     '_logged_in' => isset($_COOKIE['xs']) && is_string($_COOKIE['xs']) && hash_equals($key, $_COOKIE['xs']),
     '_login_as' => isset($_COOKIE['test_impersonation']),
     '_is_banned' => false, '_data' => ['user_id' => '42', 'active_session_token' => $key]
-], $_COOKIE);
+];
+$browser = $identity->browser($user, $_COOKIE);
 $csrf = $browser === null ? '' : hash_hmac('sha256', 'browser-confirmation', $key);
 $http = new AuthHttp($auth, $identity, $origin);
 [$status, $type, $body] = $http->handle($_SERVER['REQUEST_METHOD'], $_GET['action'] ?? '',
     $_SERVER['HTTP_ORIGIN'] ?? '', $_SERVER['CONTENT_TYPE'] ?? '',
     file_get_contents('php://input', false, null, 0, 1025) ?: '', $_POST,
-    $_SERVER['HTTP_AUTHORIZATION'] ?? '', 'loopback-fixture', $browser, $csrf);
+    $_SERVER['HTTP_AUTHORIZATION'] ?? '', 'loopback-fixture', $browser, $csrf, $user->_logged_in);
 http_response_code($status);
 header('Content-Type: ' . $type);
 echo $body;

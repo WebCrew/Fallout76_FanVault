@@ -70,7 +70,7 @@ try {
     [$status, $type, $body] = $http->handle($method, $action, $requestOrigin,
         $_SERVER['CONTENT_TYPE'] ?? '', file_get_contents('php://input', false, null, 0, 1025) ?: '',
         $_POST, $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '',
-        $client, $browser, $csrf);
+        $client, $browser, $csrf, ($user->_logged_in ?? false) === true);
     http_response_code($status);
     header('Content-Type: ' . $type);
     echo $body;

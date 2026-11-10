@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { randomBytes } = require("node:crypto");
+const { createHash, randomBytes } = require("node:crypto");
 const { spawn, execFileSync } = require("node:child_process");
 const { once } = require("node:events");
 const { createServer } = require("node:net");
@@ -49,7 +49,20 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
 
   const call = (action, options) => fetch(origin + "/index.php?action=" + action, { ...options, redirect: "error", signal: AbortSignal.timeout(3000) });
   const browser = { Cookie: `c_user=42; xs=${key}` };
-  assert.match(await (await call("approve")).text(), /zuerst bei Net-Twin/);
+  const guest = await call("approve");
+  const guestHtml = await guest.text();
+  assert.match(guestHtml, /zuerst bei Net-Twin/);
+  assert.match(guestHtml, /href="\/signin" target="_blank"/);
+  assert.match(guestHtml, /href="\?action=approve">Weiter zur Code-Eingabe/);
+  assert.doesNotMatch(guestHtml, /name="user_code"/);
+  const style = guestHtml.match(/<style>([\s\S]+)<\/style>/)[1].replace(/\r\n/g, "\n");
+  const digest = createHash("sha256").update(style).digest("base64");
+  assert.ok(guest.headers.get("content-security-policy").includes(`style-src 'sha256-${digest}'`));
+  const wrongAccount = await call("approve", { headers: { Cookie: `c_user=99; xs=${key}` } });
+  assert.equal(wrongAccount.status, 403);
+  const wrongAccountHtml = await wrongAccount.text();
+  assert.match(wrongAccountHtml, /nicht für den Test freigegeben/);
+  assert.doesNotMatch(wrongAccountHtml, /href="\/signin"|name="user_code"/);
   assert.equal((await call("me")).status, 401);
   const changes = new (require("node:events").EventEmitter)();
   let opened = "";
@@ -71,6 +84,7 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
     assert.deepEqual(Object.keys(flow).sort(), ["code", "phase"]);
     assert.equal(opened, origin + "/index.php?action=approve");
     const html = await (await call("approve", { headers: browser })).text();
+    assert.match(html, /name="user_code"/);
     const csrf = html.match(/name="csrf" value="([a-f0-9]{64})"/)[1];
     const form = (originValue, csrfValue, cookie = browser.Cookie) => call("approve", {
       method: "POST", headers: { Cookie: cookie, Origin: originValue },
