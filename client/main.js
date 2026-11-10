@@ -3,8 +3,10 @@ const fs = require("fs");
 const path = require("path");
 const { startLocalServer } = require("./local-server");
 const { loadRuntimeConfig } = require("./core/runtime-config");
+const { createNetTwinLogin } = require("./core/nettwin-login");
 
 let runtimeConfig;
+let netTwinLogin;
 
 let win;
 let localServer;
@@ -200,6 +202,16 @@ async function pickImage() {
 }
 
 ipcMain.handle("app:get-config", () => runtimeConfig);
+for (const [channel, operation] of Object.entries({
+  "auth:state": "state", "auth:start": "start", "auth:cancel": "cancel",
+  "auth:refresh": "refresh", "auth:sign-out": "signOut"
+})) {
+  ipcMain.handle(channel, (event) => {
+    if (!win || win.isDestroyed() || event.sender !== win.webContents || !event.senderFrame
+        || event.senderFrame !== win.webContents.mainFrame) return { phase: "unavailable" };
+    return netTwinLogin?.[operation]() ?? { phase: "unavailable" };
+  });
+}
 ipcMain.handle("overlay:get-state", () => layout);
 ipcMain.handle("overlay:set-expanded", (_event, nextExpanded) => setExpanded(nextExpanded));
 ipcMain.handle("app:request-quit", () => requestQuit());
@@ -264,6 +276,13 @@ app.whenReady().then(async () => {
     return;
   }
 
+  netTwinLogin = createNetTwinLogin({
+    baseUrl: runtimeConfig.loginEnabled ? runtimeConfig.apiBaseUrl : null,
+    openBrowser: (url) => shell.openExternal(url),
+    onChange: (state) => {
+      if (win && !win.isDestroyed()) win.webContents.send("auth:changed", state);
+    }
+  });
   if (runtimeConfig.transport.mode === "local-prototype") {
     try {
       localServer = await startLocalServer();
@@ -289,6 +308,7 @@ app.whenReady().then(async () => {
 });
 
 app.on("will-quit", () => {
+  netTwinLogin?.dispose();
   globalShortcut.unregisterAll();
   if (localServer) localServer.close().catch(() => {});
 });

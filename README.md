@@ -1,6 +1,6 @@
 # FanVault — Fallout 76 Clan Companion
 
-Windows overlay prototype, **v0.5.0-step8**. This candidate includes message-format handling for the installed Sngine 5.0 chat, while preserving the overlay foundation. It does not connect to Net-Twin yet.
+Windows overlay prototype, **v0.5.0-step9**. This candidate adds browser sign-in in a locally tested client/server integration. The Net-Twin pilot is not deployed.
 
 On first launch, a small icon appears near the centre of the primary display's work area. Click to open the chat interface, drag the icon or the panel title to reposition it, and resize using the lower-right grip. Position and size are saved; existing placement takes precedence over the first-run centre position.
 
@@ -8,7 +8,7 @@ On first launch, a small icon appears near the centre of the primary display's w
 
 - Transparent Electron overlay, always on top, movable, resizable and constrained to display work areas.
 - Local demo chat, sample members/profiles/channels, emoji and local image previews.
-- **No real account login, remote community chat, persistent messages, squads, live audio or published FanVault API yet.** Sample content is labelled as demo data.
+- Browser sign-in UI and an undeployed Sngine 5.0 session adapter. Remote text chat, files, squads, live audio and gamertag search are not yet connected.
 
 The intended service requires a Net-Twin account and relevant self-reported game/platform gamertag in profile settings. Search and invitations will use Net-Twin's authorised directory. A guild's Net-Twin page/group is optional for ordinary use.
 
@@ -28,7 +28,7 @@ npm run test:local-server
 npm start
 ```
 
-Default configuration runs the local demo. Production disables its unauthenticated transport; setting an API address does not implement login or enable a remote connection. See [configuration and builds](docs/developer-guide.md).
+Default configuration runs the local demo. A configured sign-in pilot disables the unauthenticated demo chat. See [browser sign-in and rollout prerequisites](docs/browser-auth.md).
 
 ## Direction
 

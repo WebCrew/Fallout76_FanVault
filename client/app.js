@@ -2,8 +2,45 @@ async function initializeFanVault() {
 const runtimeConfig = await window.fanVaultOverlay.getConfig();
 const ws = runtimeConfig.transport.localChatUrl ? new WebSocket(runtimeConfig.transport.localChatUrl) : null;
 document.querySelector(".launcher-mark").textContent = runtimeConfig.game.launcherMark;
-document.getElementById("runtimeMode").textContent = "Prototype · Demo data · No Net-Twin connection";
+document.getElementById("runtimeMode").textContent = ws ? "Prototype · Demo data · No Net-Twin connection" : "Text chat is not connected";
 document.getElementById("configuredServer").textContent = ws ? "Local demo only" : "Chat unavailable";
+const loginStatus = document.getElementById("loginStatus");
+const loginCode = document.getElementById("loginCode");
+const loginStart = document.getElementById("loginStart");
+const loginCancel = document.getElementById("loginCancel");
+const loginRefresh = document.getElementById("loginRefresh");
+const loginSignOut = document.getElementById("loginSignOut");
+const loginErrors = {
+  expired_token: "The code expired. Start a new sign-in.",
+  access_denied: "Sign-in was declined.",
+  session_ended: "Your session ended. Sign in again.",
+  service_unavailable: "Net-Twin sign-in is temporarily unavailable.",
+  revocation_unknown: "Signed out locally. Server sign-out could not be confirmed."
+};
+function displayLogin(state) {
+  const signedIn = state.phase === "authenticated";
+  const waiting = state.phase === "starting" || state.phase === "pending";
+  loginStatus.textContent = (state.error && loginErrors[state.error]) || ({
+    unavailable: "Sign-in unavailable in this setup", idle: "Not signed in", starting: "Starting sign-in",
+    pending: "Confirm in your browser", signing_out: "Signing out"
+  }[state.phase]) || (signedIn ? `Signed in as ${state.user.name}` : "Sign-in unavailable");
+  loginCode.hidden = state.phase !== "pending";
+  loginCode.textContent = state.phase === "pending" ? `Enter this code on the Net-Twin page: ${state.code}` : "";
+  loginStart.hidden = state.phase !== "idle" && state.phase !== "error";
+  loginCancel.hidden = !waiting;
+  loginRefresh.hidden = !signedIn;
+  loginSignOut.hidden = !signedIn;
+}
+const loginActions = { startLogin: loginStart, cancelLogin: loginCancel, refreshLogin: loginRefresh, signOut: loginSignOut };
+for (const [operation, button] of Object.entries(loginActions)) {
+  button.addEventListener("click", () => {
+    void window.fanVaultOverlay[operation]().then(displayLogin)
+      .catch(() => displayLogin({ phase: "error", error: "service_unavailable" }));
+  });
+}
+window.fanVaultOverlay.onLoginState(displayLogin);
+void window.fanVaultOverlay.loginState().then(displayLogin)
+  .catch(() => displayLogin({ phase: "unavailable" }));
 const messages = document.getElementById("messages");
 const msgBox = document.getElementById("msg");
 const sendBtn = document.getElementById("sendBtn");
@@ -32,7 +69,7 @@ const profileTags = document.getElementById("profileTags");
 const emojiSet = ["😀","😁","😂","🙂","😉","😍","😎","🤝","👍","👎","🔥","⚡","💀","🎯","🎮","🛠️","📦","💬","🚀","⭐","🍻","😴","😅","🤷","✅","❌","🧭","🏕️","💰","🎉"];
 const channels = runtimeConfig.game.channels;
 const channelDescriptions = runtimeConfig.game.channelDescriptions;
-const channelMessages = structuredClone(runtimeConfig.game.demoMessages);
+const channelMessages = ws ? structuredClone(runtimeConfig.game.demoMessages) : {};
 const dmMessages = {};
 const modalMap = {
   "open-voice": "voiceModal",

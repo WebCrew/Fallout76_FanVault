@@ -1,6 +1,6 @@
 # FanVault documentation
 
-Current candidate: v0.5.0-step8. Working prototype and planned integration are distinguished throughout.
+Current candidate: v0.5.0-step9. The browser sign-in pilot is locally tested and not deployed on Net-Twin.
 
 - [Authoritative product scope (German)](product-scope.md)
 
@@ -13,6 +13,7 @@ Current candidate: v0.5.0-step8. Working prototype and planned integration are d
 - [Testing and acceptance](testing.md)
 - [Troubleshooting](troubleshooting.md)
 - [API status](api/README.md)
+- [Browser sign-in and pilot rollout](browser-auth.md)
 - [Legacy WebSocket protocol](api/websocket.md)
 - [Changelog](releases/changelog.md)
 

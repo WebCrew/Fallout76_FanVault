@@ -1,6 +1,6 @@
 {
   "name": "fanvault-client",
-  "version": "0.5.0-step8",
+  "version": "0.5.0-step9",
   "description": "FanVault companion overlay for Fallout 76",
   "author": "WebCrew",
   "main": "main.js",
@@ -36,7 +36,8 @@
       "core/runtime-config.js",
       "games/fallout76.js",
       "core/sngine5-chat.js",
-      "core/message-view.js"
+      "core/message-view.js",
+      "core/nettwin-login.js"
     ],
     "win": {
       "artifactName": "FanVault-${version}-portable.${ext}",

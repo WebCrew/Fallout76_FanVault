@@ -10,11 +10,18 @@ test("development preserves the loopback demo without inventing a deployed API",
 });
 
 test("production never enables the unauthenticated prototype, even with an API address", () => {
-  for (const apiUrl of [undefined, "https://example.invalid/fanvault/api/v1/"]) {
+  for (const apiUrl of [undefined, "https://net-twin.de/fanvault/"]) {
     const config = loadRuntimeConfig({ FANVAULT_ENV: "production", FANVAULT_API_BASE_URL: apiUrl });
     assert.equal(config.transport.mode, "unavailable");
     assert.equal(config.transport.localChatUrl, null);
   }
+});
+
+test("real sign-in stays on Net-Twin, and local sign-in tests do not mix with demo chat", () => {
+  assert.throws(() => loadRuntimeConfig({ FANVAULT_ENV: "production", FANVAULT_API_BASE_URL: "https://net-twin.de.example.invalid" }));
+  const testConfig = loadRuntimeConfig({ FANVAULT_ENV: "test", FANVAULT_API_BASE_URL: "http://127.0.0.1:8000" });
+  assert.equal(testConfig.loginEnabled, true);
+  assert.equal(testConfig.transport.localChatUrl, null);
 });
 
 test("local HTTP is limited to development and test", () => {
