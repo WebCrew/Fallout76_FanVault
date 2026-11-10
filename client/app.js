@@ -10,6 +10,45 @@ const loginStart = document.getElementById("loginStart");
 const loginCancel = document.getElementById("loginCancel");
 const loginRefresh = document.getElementById("loginRefresh");
 const loginSignOut = document.getElementById("loginSignOut");
+const memberSearch = document.getElementById("memberSearch");
+const memberForm = document.getElementById("memberSearchForm");
+const memberTag = document.getElementById("memberGamertag");
+const memberStatus = document.getElementById("memberSearchStatus");
+const memberResults = document.getElementById("memberSearchResults");
+const memberSubmit = memberForm.querySelector("button");
+const memberErrors = {
+  unauthorized: "Sign in with Net-Twin in Settings to search.",
+  invalid_search: "Enter the full Fallout 76 gamertag.",
+  gamertag_required: "Add your Fallout76 Gamer Tag in your Net-Twin profile settings, then search again.",
+  slow_down: "Too many searches. Wait a minute and try again.",
+  search_unavailable: "Net-Twin player search is currently unavailable."
+};
+let memberSearchAttempt = 0;
+let memberAccount = null;
+memberSearch.hidden = Boolean(ws);
+document.getElementById("demoMembers").hidden = !ws;
+memberForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const tag = memberTag.value.trim();
+  if (!memberAccount || !tag) return;
+  const attempt = ++memberSearchAttempt;
+  memberSubmit.disabled = true;
+  memberResults.replaceChildren();
+  memberStatus.textContent = "Searching Net-Twin…";
+  const result = await window.fanVaultOverlay.searchMembers(tag).catch(() => ({ error: "search_unavailable" }));
+  if (attempt !== memberSearchAttempt) return;
+  memberSubmit.disabled = false;
+  if (result.error) {
+    memberStatus.textContent = memberErrors[result.error] || memberErrors.search_unavailable;
+    return;
+  }
+  memberStatus.textContent = result.players.length ? "Gamertags are self-reported." : "No matching player found.";
+  for (const player of result.players) {
+    const row = document.createElement("li");
+    row.textContent = `${player.gamertag} · @${player.username}`;
+    memberResults.append(row);
+  }
+});
 const loginErrors = {
   expired_token: "The code expired. Start a new sign-in.",
   access_denied: "Sign-in was declined.",
@@ -30,6 +69,16 @@ function displayLogin(state) {
   loginCancel.hidden = !waiting;
   loginRefresh.hidden = !signedIn;
   loginSignOut.hidden = !signedIn;
+  const account = signedIn ? state.user.id : null;
+  memberForm.hidden = !account;
+  if (memberAccount !== account || (!account && !memberStatus.textContent)) {
+    memberAccount = account;
+    memberSearchAttempt++;
+    memberForm.reset();
+    memberSubmit.disabled = false;
+    memberResults.replaceChildren();
+    memberStatus.textContent = account ? "" : memberErrors.unauthorized;
+  }
 }
 const loginActions = { startLogin: loginStart, cancelLogin: loginCancel, refreshLogin: loginRefresh, signOut: loginSignOut };
 for (const [operation, button] of Object.entries(loginActions)) {

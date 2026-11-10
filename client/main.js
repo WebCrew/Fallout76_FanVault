@@ -204,11 +204,16 @@ async function pickImage() {
 ipcMain.handle("app:get-config", () => runtimeConfig);
 for (const [channel, operation] of Object.entries({
   "auth:state": "state", "auth:start": "start", "auth:cancel": "cancel",
-  "auth:refresh": "refresh", "auth:sign-out": "signOut"
+  "auth:refresh": "refresh", "auth:sign-out": "signOut", "auth:member-search": "searchMembers"
 })) {
-  ipcMain.handle(channel, (event) => {
+  ipcMain.handle(channel, (event, input) => {
     if (!win || win.isDestroyed() || event.sender !== win.webContents || !event.senderFrame
         || event.senderFrame !== win.webContents.mainFrame) return { phase: "unavailable" };
+    if (operation === "searchMembers") {
+      if (typeof input !== "string" || input.length > 64 || !input.trim()) return { error: "invalid_search" };
+      const { id, memberSearchPlatform } = runtimeConfig.game;
+      return netTwinLogin?.searchMembers(id, memberSearchPlatform, input.trim()) ?? { error: "search_unavailable" };
+    }
     return netTwinLogin?.[operation]() ?? { phase: "unavailable" };
   });
 }

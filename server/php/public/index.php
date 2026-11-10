@@ -29,7 +29,7 @@ try {
     $action = $_GET['action'] ?? '';
     $method = $_SERVER['REQUEST_METHOD'] ?? '';
     $requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if (!is_string($action) || !in_array($action, ['approve', 'device', 'exchange', 'me', 'logout'], true)) {
+    if (!is_string($action) || !in_array($action, ['approve', 'device', 'exchange', 'me', 'logout', 'member-search'], true)) {
         http_response_code(404);
         exit;
     }
@@ -65,7 +65,12 @@ try {
         umask($mask);
     }
     $auth = new \FanVault\DeviceAuthorization($pdo, $identity->isActive(...));
-    $http = new \FanVault\AuthHttp($auth, $identity, $origin);
+    $members = null;
+    if ($action === 'member-search' && !empty($config['member_search_fields'])) {
+        require $private . '/MemberSearch.php';
+        $members = \FanVault\MemberSearch::fromSngine($db, $system, $config['member_search_fields']);
+    }
+    $http = new \FanVault\AuthHttp($auth, $identity, $origin, $members);
     $client = hash_hmac('sha256', $_SERVER['REMOTE_ADDR'] ?? 'unknown', $rateKey);
     [$status, $type, $body] = $http->handle($method, $action, $requestOrigin,
         $_SERVER['CONTENT_TYPE'] ?? '', file_get_contents('php://input', false, null, 0, 1025) ?: '',

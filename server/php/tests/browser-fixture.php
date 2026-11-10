@@ -14,9 +14,11 @@ if (PHP_SAPI !== 'cli-server' || ($_SERVER['REMOTE_ADDR'] ?? '') !== '127.0.0.1'
 require __DIR__ . '/../DeviceAuthorization.php';
 require __DIR__ . '/../NetTwinIdentity.php';
 require __DIR__ . '/../AuthHttp.php';
+require __DIR__ . '/../MemberSearch.php';
 use FanVault\DeviceAuthorization;
 use FanVault\NetTwinIdentity;
 use FanVault\AuthHttp;
+use FanVault\MemberSearch;
 
 foreach (AuthHttp::headers() as $name => $value) header($name . ': ' . $value);
 $binding = hash('sha256', $key);
@@ -31,7 +33,15 @@ $user = (object) [
 ];
 $browser = $identity->browser($user, $_COOKIE);
 $csrf = $browser === null ? '' : hash_hmac('sha256', 'browser-confirmation', $key);
-$http = new AuthHttp($auth, $identity, $origin);
+$members = new MemberSearch(['fallout76' => ['PC' => 99]],
+    static function (string $viewer, array $fields, string $platform, string $tag) use ($database): array {
+        if (is_file($database . '.no-tag')) return [403, ['error' => 'gamertag_required']];
+        $matches = $viewer === '42' && $fields[$platform] === 99 && strcasecmp($tag, 'Fixture Player') === 0;
+        return [200, ['players' => $matches ? [
+            ['user_id' => '43', 'username' => 'fixture-player', 'gamertag' => 'Fixture Player']
+        ] : []]];
+    });
+$http = new AuthHttp($auth, $identity, $origin, $members);
 [$status, $type, $body] = $http->handle($_SERVER['REQUEST_METHOD'], $_GET['action'] ?? '',
     $_SERVER['HTTP_ORIGIN'] ?? '', $_SERVER['CONTENT_TYPE'] ?? '',
     file_get_contents('php://input', false, null, 0, 1025) ?: '', $_POST,

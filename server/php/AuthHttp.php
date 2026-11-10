@@ -8,7 +8,8 @@ final class AuthHttp
     public function __construct(
         private readonly DeviceAuthorization $auth,
         private readonly NetTwinIdentity $identity,
-        private readonly string $origin
+        private readonly string $origin,
+        private readonly ?MemberSearch $members = null
     ) {}
 
     /** Input comes from a bounded HTTP request and a server-validated browser identity. */
@@ -18,9 +19,9 @@ final class AuthHttp
     ): array {
         if ($origin !== '' && $origin !== $this->origin) return self::json(403, ['error' => 'invalid_origin']);
         if ($action === 'approve') return $this->approval($method, $origin, $form, $browser, $csrf, $signedIn);
-        if (!in_array($action, ['device', 'exchange', 'me', 'logout'], true)) return self::json(404, ['error' => 'not_found']);
+        if (!in_array($action, ['device', 'exchange', 'me', 'logout', 'member-search'], true)) return self::json(404, ['error' => 'not_found']);
         if ($method !== ($action === 'me' ? 'GET' : 'POST')) return self::json(405, ['error' => 'invalid_method']);
-        if (!$this->auth->allow($action . ':' . $client, $action === 'device' ? 20 : 120)) {
+        if (!$this->auth->allow($action . ':' . $client, in_array($action, ['device', 'member-search'], true) ? 20 : 120)) {
             return self::json(429, ['error' => 'slow_down', 'interval' => 10]);
         }
         $token = preg_match('/^Bearer ([A-Za-z0-9_-]{43})$/D', $authorization, $match) ? $match[1] : '';
@@ -35,6 +36,16 @@ final class AuthHttp
         }
         $data = json_decode($body, true);
         if (!is_array($data)) return self::json(400, ['error' => 'invalid_request']);
+        if ($action === 'member-search') {
+            $session = $this->auth->session($token);
+            if ($session === null) return self::json(401, ['error' => 'unauthorized']);
+            if ($this->members === null) return self::json(503, ['error' => 'search_unavailable']);
+            if (!$this->auth->allow('member-search:account:' . $session['subject'], 20)) {
+                return self::json(429, ['error' => 'slow_down']);
+            }
+            [$status, $result] = $this->members->lookup($session['subject'], $data);
+            return self::json($status, $result);
+        }
         if ($action === 'device') {
             if (!$this->auth->allow('global:device', 120)) return self::json(429, ['error' => 'slow_down']);
             $result = $this->auth->start();
