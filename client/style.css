@@ -56,8 +56,19 @@ button {
 .launcher-mark { font-size: 21px; font-weight: 900; letter-spacing: -.06em; text-shadow: 0 2px 3px #000; }
 .launcher-status { position: absolute; width: 13px; height: 13px; right: 4px; bottom: 6px; border-radius: 50%; background: var(--online); border: 3px solid #101616; }
 .panel-actions { display: flex; align-items: center; gap: 5px; margin-top: 11px; }
-.panel-action, .panel-close { padding: 6px 8px; border-radius: 9px; background: rgba(255,255,255,.05); color: var(--muted); font-size: 10px; }
-.panel-close { margin-left: auto; width: 28px; height: 28px; padding: 0; font-size: 18px; color: var(--text); }
+.panel-action, .panel-close { border-radius: 9px; background: rgba(255,255,255,.05); }
+.panel-action { padding: 6px 8px; color: var(--muted); font-size: 10px; }
+.panel-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 18px;
+  color: var(--text);
+}
 .panel-action:hover, .panel-close:hover { background: rgba(134,178,126,.16); color: var(--text); }
 
 .workspace {
@@ -248,7 +259,7 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 12px 8px;
+  padding: 50px 8px 12px;
 }
 
 .member-avatar {
