@@ -9,7 +9,7 @@ The search uses the dedicated Net-Twin user textbox **Fallout76 Gamer Tag**. It 
 - Send `POST /fanvault/index.php?action=member-search` with a valid FanVault bearer session and a JSON body containing `game` (`fallout76`), `platform` (`PC`) and `tag`. The query is a full, case-insensitive match. The response contains at most eight player IDs, usernames and self-reported gamertags.
 - Search honours account activation and approval, incognito mode, hidden suggestions and blocks in both directions. It excludes the requester and is rate-limited per account and connection address.
 - Install `MemberSearch.php` alongside the other private PHP files. Set `member_search_fields` to `['fallout76' => ['PC' => FIELD_ID]]` in the private configuration once the field exists and its visibility has been approved. An empty mapping disables search. Existing sign-in remains usable with the mapping empty.
-- Net-Twin's **People → Find** can use custom search fields enabled for search. The global search bar uses Sngine's ordinary name search. The Sngine People search excludes the root admin profile. The FanVault endpoint uses the configured gamertag field and applies the visibility checks above.
+- Use the FanVault app for player searches during the pilot. Net-Twin's global search does not search the gamertag field and may interpret a tag suffix as a hashtag. The website's separate **People → Find** filter accepts the full tag but can fail when location search is active. It also excludes the root admin profile.
 
 The loopback browser test exercises the API with synthetic players and checks anonymous access, foreign origins, exact matching, platform isolation, missing gamertags and sign-out.
 

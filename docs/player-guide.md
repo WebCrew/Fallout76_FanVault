@@ -12,3 +12,5 @@ The local chat starts automatically in the default demo. It does not exchange me
 Test Fallout 76 in windowed/borderless mode. Visibility over exclusive fullscreen is not guaranteed. No game-process injection is introduced by this step.
 
 The intended real service requires a Net-Twin account and relevant game/platform gamertag in profile settings. Creating a group/page or generating an API key is not required for ordinary use.
+
+For the Fallout 76 search pilot, enter your PC gamertag in the **Fallout76 Gamer Tag** field in your Net-Twin profile settings. To find another player, sign in to the FanVault Windows app and enter their full tag, including any `#` suffix, under **Members**. For now, use the app for gamertag searches. The Net-Twin website's global search does not search this profile field.
