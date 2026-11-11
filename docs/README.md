@@ -1,11 +1,11 @@
 # FanVault documentation
 
-Current candidate: v0.5.0-step9. The browser sign-in pilot is locally tested and not deployed on Net-Twin.
+Net-Twin sign-in and Fallout 76 gamertag search are running in the Windows pilot. The guild guide describes the agreed setup flow for the planned guild features.
 
 - [Authoritative product scope (German)](product-scope.md)
 
 - [Player guide](player-guide.md)
-- [Guild leader guide](guild-leader-guide.md)
+- [Gilde einrichten und Mitglieder aufnehmen](guild-leader-guide.md)
 - [Developer guide and configuration](developer-guide.md)
 - [Architecture and decisions](architecture.md)
 - [Security and privacy](security.md)

@@ -20,7 +20,7 @@ Windows overlay -> FanVault API -> Net-Twin identity, gamertags and existing tex
 - Real service requires a Net-Twin account and the relevant game/platform gamertag. Current demo does not enforce this yet.
 - Net-Twin remains the identity/tag source. No Bethesda database access; self-reported tags are not verified game accounts.
 - App and website search should use the same authorised directory. Existing platform/tag fields still need a game mapping and verified search behaviour.
-- Leaders may maintain a Net-Twin page/group. Ordinary players need not create one. Group roles must not confer global FanVault administration.
+- **Our Guild Home** links each guild to a Net-Twin group or page. The server verifies the leader's role for that specific home and uses confirmed group membership or a dedicated Net-Twin page roster to sync access. See the [guild setup flow](guild-leader-guide.md) and [product scope](product-scope.md).
 - No API keys for ordinary players/leaders. Later developer apps/bots may receive separately scoped, revocable access. Global Sngine secrets stay server-side.
 - GitHub hosts source, docs and Windows downloads. The running API must fit the existing shared hosting, in the reserved `fanvault` directory. PHP and bounded polling are proposed; capacity/deployment remain to be validated.
 - Reuse existing message storage. A separate FanVault SQL database is conditional on session/metadata needs; none is created by this step.
@@ -34,10 +34,9 @@ Message reads check conversation participation. Sending applies privacy/block ch
 
 ## Delivery sequence
 
-1. This candidate: configuration, demo labelling, centred initial icon and documentation.
-2. Secure login/session bridge and constrained FanVault API, with secrets kept on the server.
-3. Two-account app/website chat exchange, shared history and denied outsider access.
-4. Gamertag search, invitations, guild membership/roles and persistent features.
-5. Permission-checked chat attachments and direct four-person voice; complete Windows/game acceptance. Tutorials use ordinary chat content, not an additional module. Profile image editing is part of profiles. Other-game implementation follows a stable Fallout 76 release.
+1. Windows pilot with a secure Net-Twin session and Fallout 76 gamertag search. Both flows have been tested with the designated accounts.
+2. **Our Guild** setup, linked Net-Twin home, role checks and membership sync. Confirm that a join and a departure are reflected in FanVault.
+3. Squad invitations, followed by a two-account app/website chat exchange, shared history and denied outsider access.
+4. Permission-checked chat attachments, editable player profiles and direct four-person voice. Complete Windows/game acceptance before another game implementation.
 
 Open decisions: tag visibility, detailed guild mapping, retention/deletion, session exchange, hosting capacity, voice connectivity details and distribution/asset licensing. The four-person direct-audio direction is agreed; its implementation is still pending. Configuration defaults do not resolve the remaining decisions.
