@@ -15,6 +15,8 @@ The search uses the dedicated Net-Twin user textbox **Fallout76 Gamer Tag**. It 
 
 The optional form at `/fanvault/players.php` uses the same full-tag lookup, with the user's Net-Twin browser session. Sign in, enter the complete PC gamertag including any `#` suffix, and open a matching profile from the results. The same own-tag requirement and visibility checks apply.
 
+The form is live on Net-Twin and linked from the **Info** section of the FanVault community page. A signed-in browser test verified a match and profile link for a complete tag containing `#`. A guest request returned the sign-in prompt. [FanVault on Net-Twin](https://net-twin.de/pages/FanVault)
+
 Install `WebMemberSearch.php` alongside the existing private PHP files and deploy the updated `AuthHttp.php`, `NetTwinIdentity.php` and public `index.php`. Place the public `players.php` beside `index.php`. Set `web_member_search_enabled` to `true` in the private configuration when ready to enable the website form, and use its URL for the link from the FanVault page on Net-Twin.
 
 The loopback browser test exercises the API with synthetic players and checks anonymous access, foreign origins, exact matching, platform isolation, missing gamertags and sign-out.

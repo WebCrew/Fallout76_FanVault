@@ -13,4 +13,4 @@ Test Fallout 76 in windowed/borderless mode. Visibility over exclusive fullscree
 
 The intended real service requires a Net-Twin account and relevant game/platform gamertag in profile settings. Creating a group/page or generating an API key is not required for ordinary use.
 
-For the Fallout 76 search pilot, enter your PC gamertag in the **Fallout76 Gamer Tag** field in your Net-Twin profile settings. To find another player, sign in to the FanVault Windows app and enter their full tag, including any `#` suffix, under **Members**. For now, use the app for gamertag searches. The Net-Twin website's global search does not search this profile field.
+Enter your PC gamertag in the **Fallout76 Gamer Tag** field in your Net-Twin profile settings. To find another player, enter their full tag, including any `#` suffix, under **Members** in the FanVault app or in the separate website form. The FanVault community page links to that form in its **Info** section. [Fallout-76-Spieler finden](https://net-twin.de/fanvault/players.php)
