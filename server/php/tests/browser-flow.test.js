@@ -69,6 +69,19 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   });
   assert.equal((await search({ game: "fallout76", platform: "PC", tag: "Fixture Player" })).status, 401);
   assert.equal((await search({}, { Origin: "https://other.invalid" })).status, 403);
+  const webSearch = options => fetch(origin + "/players.php", { ...options, signal: AbortSignal.timeout(3000) });
+  assert.equal((await webSearch()).status, 401);
+  const webForm = await (await webSearch({ headers: browser })).text();
+  const webCsrf = webForm.match(/name="csrf" value="([a-f0-9]{64})"/)[1];
+  assert.match(webForm, /Vollständiger Fallout-76-Gamertag/);
+  const submitWeb = (tag, csrf) => webSearch({
+    method: "POST", headers: browser, body: new URLSearchParams({ tag, csrf })
+  });
+  assert.equal((await submitWeb("Fixture Player#1234", "wrong")).status, 403);
+  const webMatch = await submitWeb("Fixture Player#1234", webCsrf);
+  assert.equal(webMatch.status, 200);
+  assert.match(await webMatch.text(), /Fixture Player#1234 · <a[^>]+href="\/fixture-player">/);
+  assert.match(await (await submitWeb("Fixture Player", webCsrf)).text(), /Keine passenden Spieler/);
   const changes = new (require("node:events").EventEmitter)();
   let opened = "";
   let bearer;
@@ -105,8 +118,8 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   }
   await approve();
   const firstToken = bearer;
-  assert.deepEqual(await login.searchMembers("fallout76", "PC", " fixture player "), {
-    players: [{ id: "43", username: "fixture-player", gamertag: "Fixture Player" }]
+  assert.deepEqual(await login.searchMembers("fallout76", "PC", " fixture player#1234 "), {
+    players: [{ id: "43", username: "fixture-player", gamertag: "Fixture Player#1234" }]
   });
   assert.deepEqual(await login.searchMembers("fallout76", "PC", "Fixture"), { players: [] });
   assert.deepEqual(await login.searchMembers("fallout76", "Xbox", "Fixture Player"), { error: "invalid_search" });

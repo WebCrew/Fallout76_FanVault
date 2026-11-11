@@ -15,10 +15,12 @@ require __DIR__ . '/../DeviceAuthorization.php';
 require __DIR__ . '/../NetTwinIdentity.php';
 require __DIR__ . '/../AuthHttp.php';
 require __DIR__ . '/../MemberSearch.php';
+require __DIR__ . '/../WebMemberSearch.php';
 use FanVault\DeviceAuthorization;
 use FanVault\NetTwinIdentity;
 use FanVault\AuthHttp;
 use FanVault\MemberSearch;
+use FanVault\WebMemberSearch;
 
 foreach (AuthHttp::headers() as $name => $value) header($name . ': ' . $value);
 $binding = hash('sha256', $key);
@@ -36,11 +38,20 @@ $csrf = $browser === null ? '' : hash_hmac('sha256', 'browser-confirmation', $ke
 $members = new MemberSearch(['fallout76' => ['PC' => 99]],
     static function (string $viewer, array $fields, string $platform, string $tag) use ($database): array {
         if (is_file($database . '.no-tag')) return [403, ['error' => 'gamertag_required']];
-        $matches = $viewer === '42' && $fields[$platform] === 99 && strcasecmp($tag, 'Fixture Player') === 0;
+        $matches = $viewer === '42' && $fields[$platform] === 99 && strcasecmp($tag, 'Fixture Player#1234') === 0;
         return [200, ['players' => $matches ? [
-            ['user_id' => '43', 'username' => 'fixture-player', 'gamertag' => 'Fixture Player']
+            ['user_id' => '43', 'username' => 'fixture-player', 'gamertag' => 'Fixture Player#1234']
         ] : []]];
     });
+if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/players.php') {
+    $webCsrf = $browser === null ? '' : hash_hmac('sha256', 'players:' . $browser['session_ref'], $key);
+    [$status, $type, $body] = (new WebMemberSearch($members, $auth))->handle(
+        $_SERVER['REQUEST_METHOD'], $_POST, $browser, $webCsrf, 'loopback-fixture'
+    );
+    http_response_code($status);
+    header('Content-Type: ' . $type);
+    exit($body);
+}
 $http = new AuthHttp($auth, $identity, $origin, $members);
 [$status, $type, $body] = $http->handle($_SERVER['REQUEST_METHOD'], $_GET['action'] ?? '',
     $_SERVER['HTTP_ORIGIN'] ?? '', $_SERVER['CONTENT_TYPE'] ?? '',

@@ -123,7 +123,7 @@ final class AuthHttp
         return [$status, 'application/json; charset=utf-8', json_encode($data, JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE)];
     }
 
-    private static function html(string $value): string { return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+    public static function html(string $value): string { return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 
     private const PAGE_STYLE = <<<'CSS'
         * { box-sizing: border-box }
@@ -136,7 +136,8 @@ final class AuthHttp
         ol { padding-inline-start: 1.5rem }
         li + li { margin-top: 1.2rem }
         label { display: block; font-weight: 700; margin: 1.25rem 0 .45rem }
-        input { width: min(100%, 18rem); padding: .75rem; border: 1px solid #859cb0; border-radius: .5rem; background: #101822; color: #fff; font: 1.3rem ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase }
+        input { width: min(100%, 18rem); padding: .75rem; border: 1px solid #859cb0; border-radius: .5rem; background: #101822; color: #fff; font: 1.3rem ui-monospace, monospace }
+        #app-code { letter-spacing: .12em; text-transform: uppercase }
         .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.25rem }
         .button { display: inline-block; padding: .6rem .9rem; border: 1px solid transparent; border-radius: .5rem; background: #ffd369; color: #15191d; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer }
         .secondary { border-color: #859cb0; background: transparent; color: #eff5fb }
@@ -148,11 +149,11 @@ final class AuthHttp
         return '<p><a class="button secondary" href="?action=approve">Weiter zur Code-Eingabe</a></p>';
     }
 
-    private static function page(int $status, string $content): array
+    public static function page(int $status, string $content, string $title = 'FanVault mit Net-Twin verbinden'): array
     {
         return [$status, 'text/html; charset=utf-8',
             '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            . '<title>FanVault mit Net-Twin verbinden</title><style>' . self::PAGE_STYLE . '</style></head><body>'
-            . '<main><div class="brand">FanVault · Net-Twin</div><h1>FanVault mit Net-Twin verbinden</h1>' . $content . '</main></body></html>'];
+            . '<title>' . self::html($title) . '</title><style>' . self::PAGE_STYLE . '</style></head><body>'
+            . '<main><div class="brand">FanVault · Net-Twin</div><h1>' . self::html($title) . '</h1>' . $content . '</main></body></html>'];
     }
 }

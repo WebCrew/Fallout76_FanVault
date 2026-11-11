@@ -15,7 +15,7 @@ final class NetTwinIdentity
         $this->findSession = Closure::fromCallable($findSession);
     }
 
-    public static function fromSngine(\mysqli $db, array $system, array $pilotUsers): self
+    public static function fromSngine(\mysqli $db, array $system, ?array $pilotUsers): self
     {
         return new self(static function (string $userId, string $digest) use ($db, $system, $pilotUsers): ?string {
             if (empty($system['system_live']) || !empty($system['viewer_ip_banned'])) return null;
@@ -29,7 +29,8 @@ final class NetTwinIdentity
                 $stmt->bind_param('ss', $userId, $digest);
                 $stmt->execute();
                 $stmt->bind_result($username);
-                return $stmt->fetch() === true && is_string($username) && in_array($username, $pilotUsers, true)
+                return $stmt->fetch() === true && is_string($username)
+                    && ($pilotUsers === null || in_array($username, $pilotUsers, true))
                     ? $username : null;
             } finally {
                 $stmt->close();
