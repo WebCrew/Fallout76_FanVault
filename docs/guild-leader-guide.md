@@ -10,4 +10,6 @@ Diese Anleitung ist für die geplante Gildenfunktion geschrieben. Die Schritte k
 
 **Du möchtest mitspielen?** Melde dich mit deinem Net-Twin-Konto an, hinterlege deinen PC-Gamertag und nimm die Einladung zur Gilde an. In FanVault öffnest du anschließend **Our Guild**.
 
-Für eure Spielrunde könnt ihr innerhalb der Gilde eine Gruppe mit bis zu vier Leuten bilden. In der Gilde selbst können mehr Leute sein.
+Wenn euer Gilden-Zuhause eine Net-Twin-Gruppe mit Chatbox ist, könnt ihr am PC in FanVault schreiben oder die Chatbox auf Net-Twin öffnen. Eure Textnachrichten erscheinen an beiden Orten.
+
+Für eure Spielrunde könnt ihr innerhalb der Gilde eine Gruppe mit bis zu vier Leuten bilden und in FanVault gemeinsam sprechen. In der Gilde selbst können mehr Leute sein.

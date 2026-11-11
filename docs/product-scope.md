@@ -28,7 +28,8 @@ Festgehalten am 31. Oktober 2026 und um den vereinbarten Gildenablauf vom 11. No
 
 ## Textchat, Tutorials und Dateien
 
-- Gruppenmitglieder können gemeinsam Textnachrichten austauschen. Vorhandenen Net-Twin-/Sngine-Textchat und dessen Speicherung wiederverwenden, soweit seine Rechte und Funktionen passen.
+- Für ein **Our Guild Home** vom Typ Net-Twin-Gruppe nutzen das FanVault-Overlay und die Chatbox der Gruppe dieselbe Sngine-Unterhaltung. Textnachrichten erscheinen in beiden Richtungen im gemeinsamen Verlauf. FanVault prüft beim Lesen und Schreiben die bestätigte Gruppenmitgliedschaft.
+- Der erste Chat-Test umfasst Text in beide Richtungen und die Zugriffssperre nach einem Austritt. Ein gemeinsamer Gildenchat für ein **Our Guild Home** vom Typ Net-Twin-Seite braucht eine eigene Anbindung.
 - Tutorials werden ausschließlich als Chatbeiträge geteilt, zum Beispiel als Text, Bild oder Link. Kein separates Tutorial-Modul, Kursbereich oder redaktionelles Veröffentlichungssystem.
 - Bilder und andere ausdrücklich erlaubte Dateien werden ausschließlich als Chat-Anhänge hochgeladen und geteilt. Keine eigenständige Dateibibliothek, Galerie oder allgemeine Upload-Seite.
 - Echte Anhänge müssen den berechtigten Teilnehmern zugänglich sein und nach einem Neustart wieder im Verlauf erscheinen. Eine lokale Bildvorschau allein erfüllt diese Funktion nicht.
@@ -37,7 +38,7 @@ Festgehalten am 31. Oktober 2026 und um den vereinbarten Gildenablauf vom 11. No
 
 ## Sprachraum
 
-- Optionaler gemeinsamer Sprachraum je Vierergruppe, selbstständig beitreten/verlassen, ohne Klingeln oder Einzelanrufannahme.
+- Optionaler gemeinsamer Sprachraum je Vierergruppe ausschließlich in FanVault. Teilnehmer können dem Raum selbstständig beitreten und ihn wieder verlassen.
 - Direkte WebRTC-Audioverbindungen zwischen den PCs, Mikrofon-Stummschaltung und Push-to-Talk.
 - Kein eigener Sprachserver und kein zusätzlicher kostenpflichtiger Audiodienst. Shared Hosting übernimmt nur Anmeldung, Rechte, Räume und Verbindungsanbahnung.
 - Ohne Weiterleitungsserver können direkte Verbindungen bei einzelnen Netzwerken scheitern; das muss im Test geprüft und in der App ehrlich angezeigt werden.
