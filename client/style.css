@@ -419,7 +419,7 @@ button {
 #loginPanel [hidden] { display: none; }
 #memberSearch[hidden], #memberSearchForm[hidden], #demoMembers[hidden] { display: none; }
 #memberSearch label { font-size: 12px; color: var(--muted); }
-#memberSearch input {
+#memberSearch input, #guildUrl {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--line);
@@ -429,6 +429,9 @@ button {
 }
 #memberSearchStatus { margin: 0; color: var(--muted); }
 #memberSearchResults li { overflow-wrap: anywhere; }
+#guildModal { max-height: calc(100vh - 24px); overflow-y: auto; }
+#guildStatus, #guildTitle { margin: 0; overflow-wrap: anywhere; }
+#guildHome { color: var(--text); font-weight: 700; }
 #loginCode { margin: 0; overflow-wrap: anywhere; }
 .menu-action-danger { color: #ffb7b7; }
 .menu-action-danger:hover { background: rgba(190, 70, 78, 0.24); }

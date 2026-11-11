@@ -34,7 +34,7 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   t.after(async () => {
     processHandle.kill();
     await stopped;
-    for (const suffix of ["", "-journal", "-shm", "-wal", ".revoked", ".no-tag"]) {
+    for (const suffix of ["", "-journal", "-shm", "-wal", ".revoked", ".no-tag", ".left-guild"]) {
       await unlink(database + suffix).catch(error => { if (error.code !== "ENOENT") throw error; });
     }
     await rmdir(directory);
@@ -69,6 +69,9 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   });
   assert.equal((await search({ game: "fallout76", platform: "PC", tag: "Fixture Player" })).status, 401);
   assert.equal((await search({}, { Origin: "https://other.invalid" })).status, 403);
+  assert.equal((await call("our-guild", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: '{"operation":"list"}'
+  })).status, 401);
   const webSearch = options => fetch(origin + "/players.php", { ...options, signal: AbortSignal.timeout(3000) });
   assert.equal((await webSearch()).status, 401);
   const webForm = await (await webSearch({ headers: browser })).text();
@@ -118,6 +121,23 @@ test("desktop login uses real HTTP handlers with a synthetic Sngine session", { 
   }
   await approve();
   const firstToken = bearer;
+  assert.deepEqual(await login.ourGuild({ operation: "list" }), { guilds: [] });
+  assert.deepEqual(await login.ourGuild({ operation: "link", url: origin + "/groups/other-guild" }),
+    { error: "guild_manager_required" });
+  assert.deepEqual(await login.ourGuild({ operation: "link", url: "https://other.invalid/groups/fixture-guild" }),
+    { error: "invalid_guild_home" });
+  const home = { id: "7", title: "Fixture Guild", url: origin + "/groups/fixture-guild" };
+  assert.deepEqual(await login.ourGuild({ operation: "link", url: home.url }), { guild: home });
+  assert.deepEqual(await login.ourGuild({ operation: "link", url: home.url }), { guild: home });
+  assert.deepEqual(await login.ourGuild({ operation: "list" }), { guilds: [home] });
+  const rosterRequest = { operation: "members", group_id: "7", after: "0" };
+  assert.deepEqual(await login.ourGuild(rosterRequest), { members: [
+    { id: "42", username: "fixture-leader" }, { id: "43", username: "fixture-player" }
+  ], next: null });
+  await writeFile(database + ".left-guild", "");
+  assert.deepEqual(await login.ourGuild(rosterRequest), { error: "guild_membership_required" });
+  assert.deepEqual(await login.ourGuild({ operation: "list" }), { guilds: [] });
+  await unlink(database + ".left-guild");
   assert.deepEqual(await login.searchMembers("fallout76", "PC", " fixture player#1234 "), {
     players: [{ id: "43", username: "fixture-player", gamertag: "Fixture Player#1234" }]
   });

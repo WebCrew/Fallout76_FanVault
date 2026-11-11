@@ -204,7 +204,7 @@ async function pickImage() {
 ipcMain.handle("app:get-config", () => runtimeConfig);
 for (const [channel, operation] of Object.entries({
   "auth:state": "state", "auth:start": "start", "auth:cancel": "cancel",
-  "auth:refresh": "refresh", "auth:sign-out": "signOut", "auth:member-search": "searchMembers"
+  "auth:refresh": "refresh", "auth:sign-out": "signOut", "auth:member-search": "searchMembers", "auth:our-guild": "ourGuild"
 })) {
   ipcMain.handle(channel, (event, input) => {
     if (!win || win.isDestroyed() || event.sender !== win.webContents || !event.senderFrame
@@ -213,6 +213,18 @@ for (const [channel, operation] of Object.entries({
       if (typeof input !== "string" || input.length > 64 || !input.trim()) return { error: "invalid_search" };
       const { id, memberSearchPlatform } = runtimeConfig.game;
       return netTwinLogin?.searchMembers(id, memberSearchPlatform, input.trim()) ?? { error: "search_unavailable" };
+    }
+    if (operation === "ourGuild") {
+      const { operation: action, url, group_id, after } = input || {};
+      if (action === "list") return netTwinLogin?.ourGuild({ operation: action }) ?? { error: "guild_unavailable" };
+      if (action === "link" && typeof url === "string" && url.length <= 256) {
+        return netTwinLogin?.ourGuild({ operation: action, url }) ?? { error: "guild_unavailable" };
+      }
+      if (action === "members" && typeof group_id === "string" && typeof after === "string"
+          && group_id.length <= 20 && after.length <= 20) {
+        return netTwinLogin?.ourGuild({ operation: action, group_id, after }) ?? { error: "guild_unavailable" };
+      }
+      return { error: "invalid_guild_request" };
     }
     return netTwinLogin?.[operation]() ?? { phase: "unavailable" };
   });

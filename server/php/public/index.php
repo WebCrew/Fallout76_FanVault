@@ -30,7 +30,7 @@ try {
     foreach (\FanVault\AuthHttp::headers() as $key => $value) header($key . ': ' . $value);
     $method = $_SERVER['REQUEST_METHOD'] ?? '';
     $requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if (!in_array($action, ['approve', 'device', 'exchange', 'me', 'logout', 'member-search', 'players'], true)
+    if (!in_array($action, ['approve', 'device', 'exchange', 'me', 'logout', 'member-search', 'players', 'our-guild'], true)
         || ($webSearch && ($config['web_member_search_enabled'] ?? false) !== true)) {
         http_response_code(404);
         exit;
@@ -78,7 +78,12 @@ try {
         require $private . '/WebMemberSearch.php';
         [$status, $type, $body] = (new \FanVault\WebMemberSearch($members, $auth))->handle($method, $_POST, $browser, $csrf, $client);
     } else {
-        $http = new \FanVault\AuthHttp($auth, $identity, $origin, $members);
+        $guilds = null;
+        if ($action === 'our-guild' && ($config['guilds_enabled'] ?? false) === true) {
+            require $private . '/GuildDirectory.php';
+            $guilds = \FanVault\GuildDirectory::fromSngine($pdo, $origin, $db);
+        }
+        $http = new \FanVault\AuthHttp($auth, $identity, $origin, $members, $guilds);
         [$status, $type, $body] = $http->handle($method, $action, $requestOrigin,
             $_SERVER['CONTENT_TYPE'] ?? '', file_get_contents('php://input', false, null, 0, 1025) ?: '',
             $_POST, $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '',

@@ -16,11 +16,13 @@ require __DIR__ . '/../NetTwinIdentity.php';
 require __DIR__ . '/../AuthHttp.php';
 require __DIR__ . '/../MemberSearch.php';
 require __DIR__ . '/../WebMemberSearch.php';
+require __DIR__ . '/../GuildDirectory.php';
 use FanVault\DeviceAuthorization;
 use FanVault\NetTwinIdentity;
 use FanVault\AuthHttp;
 use FanVault\MemberSearch;
 use FanVault\WebMemberSearch;
+use FanVault\GuildDirectory;
 
 foreach (AuthHttp::headers() as $name => $value) header($name . ': ' . $value);
 $binding = hash('sha256', $key);
@@ -52,7 +54,21 @@ if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/players.php') {
     header('Content-Type: ' . $type);
     exit($body);
 }
-$http = new AuthHttp($auth, $identity, $origin, $members);
+$guilds = new GuildDirectory(new PDO('sqlite:' . $database), $origin,
+    static function (string $viewer, ?string $slug) use ($database): array {
+        if ($viewer !== '42' || is_file($database . '.left-guild')) return [];
+        $groups = [
+            ['id' => '7', 'name' => 'fixture-guild', 'title' => 'Fixture Guild', 'can_manage' => true],
+            ['id' => '8', 'name' => 'other-guild', 'title' => 'Other Guild', 'can_manage' => false]
+        ];
+        return $slug === null ? $groups : array_values(array_filter($groups, static fn(array $group): bool => $group['name'] === $slug));
+    },
+    static fn(string $viewer, string $group, string $after): ?array =>
+        $viewer === '42' && $group === '7' && !is_file($database . '.left-guild')
+            ? ($after === '0' ? [['id' => '42', 'username' => 'fixture-leader'], ['id' => '43', 'username' => 'fixture-player']] : [])
+            : null
+);
+$http = new AuthHttp($auth, $identity, $origin, $members, $guilds);
 [$status, $type, $body] = $http->handle($_SERVER['REQUEST_METHOD'], $_GET['action'] ?? '',
     $_SERVER['HTTP_ORIGIN'] ?? '', $_SERVER['CONTENT_TYPE'] ?? '',
     file_get_contents('php://input', false, null, 0, 1025) ?: '', $_POST,

@@ -13,5 +13,6 @@ return [
     // Keep empty until the Net-Twin field mappings and visibility have been reviewed.
     'member_search_fields' => [],
     // Serve the website form to eligible, signed-in Net-Twin users.
-    'web_member_search_enabled' => false
+    'web_member_search_enabled' => false,
+    'guilds_enabled' => false
 ];

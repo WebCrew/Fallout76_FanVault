@@ -183,6 +183,29 @@
     </div>
   </section>
 
+  <section class="modal hidden" id="guildModal" aria-label="Our Guild">
+    <button class="modal-close" data-close aria-label="Close">&times;</button>
+    <div class="popup-card">
+      <h2>Our Guild</h2>
+      <div class="settings-list">
+        <form id="guildLinkForm" class="settings-list hidden">
+          <label for="guildUrl">Net-Twin group link</label>
+          <input id="guildUrl" type="url" maxlength="256" required placeholder="https://net-twin.de/groups/…">
+          <button class="menu-action" type="submit">Link Our Guild Home</button>
+        </form>
+        <p id="guildStatus" role="status"></p>
+        <div id="guildChoices" class="settings-list"></div>
+        <div id="guildRoster" class="settings-list hidden">
+          <h3 id="guildTitle"></h3>
+          <a id="guildHome" target="_blank" rel="noopener">Our Guild Home ↗</a>
+          <ul id="guildMembers" class="simple-links" aria-label="Guild members"></ul>
+          <button id="guildMore" class="menu-action hidden">Show more members</button>
+        </div>
+        <button id="guildRefresh" class="menu-action hidden">Refresh guilds</button>
+      </div>
+    </div>
+  </section>
+
   <section class="modal hidden" id="menuModal" aria-label="Menu">
     <button class="modal-close" data-close>&times;</button>
     <div class="popup-card menu-card">
@@ -191,6 +214,7 @@
         <button class="menu-action" data-action="open-profile-from-menu">Profile</button>
         <button class="menu-action" data-action="open-settings">Settings</button>
         <button class="menu-action" data-action="open-members">Members</button>
+        <button class="menu-action" data-action="open-guild">Our Guild</button>
         <button class="menu-action menu-action-danger" data-action="exit-app">Exit FanVault</button>
       </div>
     </div>
@@ -209,6 +233,7 @@
           <button class="menu-action" id="loginRefresh" hidden>Check session</button>
           <button class="menu-action" id="loginSignOut" hidden>Sign out of FanVault</button>
         </section>
+        <button class="menu-action" data-action="setup-guild">I lead a guild</button>
         <div class="setting-row"><span>Hotkey</span><strong>Ctrl + Shift + F</strong></div>
         <div class="setting-row"><span>Interaction</span><strong>Not implemented</strong></div>
         <div class="setting-row"><span>Exit</span><strong>Ctrl + Shift + Q</strong></div>

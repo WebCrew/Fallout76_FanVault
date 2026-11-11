@@ -9,7 +9,8 @@ final class AuthHttp
         private readonly DeviceAuthorization $auth,
         private readonly NetTwinIdentity $identity,
         private readonly string $origin,
-        private readonly ?MemberSearch $members = null
+        private readonly ?MemberSearch $members = null,
+        private readonly ?GuildDirectory $guilds = null
     ) {}
 
     /** Input comes from a bounded HTTP request and a server-validated browser identity. */
@@ -19,7 +20,7 @@ final class AuthHttp
     ): array {
         if ($origin !== '' && $origin !== $this->origin) return self::json(403, ['error' => 'invalid_origin']);
         if ($action === 'approve') return $this->approval($method, $origin, $form, $browser, $csrf, $signedIn);
-        if (!in_array($action, ['device', 'exchange', 'me', 'logout', 'member-search'], true)) return self::json(404, ['error' => 'not_found']);
+        if (!in_array($action, ['device', 'exchange', 'me', 'logout', 'member-search', 'our-guild'], true)) return self::json(404, ['error' => 'not_found']);
         if ($method !== ($action === 'me' ? 'GET' : 'POST')) return self::json(405, ['error' => 'invalid_method']);
         if (!$this->auth->allow($action . ':' . $client, in_array($action, ['device', 'member-search'], true) ? 20 : 120)) {
             return self::json(429, ['error' => 'slow_down', 'interval' => 10]);
@@ -36,6 +37,13 @@ final class AuthHttp
         }
         $data = json_decode($body, true);
         if (!is_array($data)) return self::json(400, ['error' => 'invalid_request']);
+        if ($action === 'our-guild') {
+            $session = $this->auth->session($token);
+            if ($session === null) return self::json(401, ['error' => 'unauthorized']);
+            if ($this->guilds === null) return self::json(503, ['error' => 'guild_unavailable']);
+            [$status, $result] = $this->guilds->handle($session['subject'], $data);
+            return self::json($status, $result);
+        }
         if ($action === 'member-search') {
             $session = $this->auth->session($token);
             if ($session === null) return self::json(401, ['error' => 'unauthorized']);
