@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("fanVaultOverlay", {
   refreshLogin: () => ipcRenderer.invoke("auth:refresh"),
   signOut: () => ipcRenderer.invoke("auth:sign-out"),
   searchMembers: (tag) => ipcRenderer.invoke("auth:member-search", tag),
+  ourGuild: (input) => ipcRenderer.invoke("auth:our-guild", input),
   onLoginState: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on("auth:changed", listener);

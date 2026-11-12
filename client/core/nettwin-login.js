@@ -30,7 +30,8 @@ function createNetTwinLogin({ baseUrl, openBrowser, onChange = () => {}, request
     });
     if (response.status === 401) return { error: "unauthorized" };
     if (response.status === 429) return { error: "slow_down", interval: 10 };
-    if (action === "member-search" && response.status === 404) return { error: "search_unavailable" };
+    if (response.status === 404 && action === "member-search") return { error: "search_unavailable" };
+    if (response.status === 404 && action === "our-guild") return { error: "guild_unavailable" };
     if (!(response.headers.get("content-type") || "").startsWith("application/json")) throw new Error("Invalid API response");
     const result = await response.json();
     if (!result || typeof result !== "object" || (!response.ok && typeof result.error !== "string")) {
@@ -139,16 +140,20 @@ function createNetTwinLogin({ baseUrl, openBrowser, onChange = () => {}, request
       signingOut = false;
     }
   }
-  async function searchMembers(game, platform, tag) {
+  async function authenticatedRequest(action, body) {
     const token = access;
     if (!token) return { error: "unauthorized" };
+    const result = await api(action, { body, token });
+    if (access !== token) return { error: "unauthorized" };
+    if (result.error === "unauthorized") {
+      access = null;
+      publish({ phase: "error", error: "session_ended" });
+    }
+    return result;
+  }
+  async function searchMembers(game, platform, tag) {
     try {
-      const result = await api("member-search", { body: { game, platform, tag }, token });
-      if (access !== token) return { error: "unauthorized" };
-      if (result.error === "unauthorized") {
-        access = null;
-        publish({ phase: "error", error: "session_ended" });
-      }
+      const result = await authenticatedRequest("member-search", { game, platform, tag });
       if (typeof result.error === "string") return { error: result.error };
       if (!Array.isArray(result.players) || result.players.length > 8) throw new Error("Invalid search response");
       return {
@@ -165,12 +170,38 @@ function createNetTwinLogin({ baseUrl, openBrowser, onChange = () => {}, request
       return { error: "search_unavailable" };
     }
   }
+  async function ourGuild(input) {
+    try {
+      const result = await authenticatedRequest("our-guild", input);
+      if (typeof result.error === "string") return { error: result.error };
+      const validId = (id) => typeof id === "string" && /^[1-9][0-9]{0,19}$/.test(id);
+      const publicGuild = ({ id, title, url }) => {
+        const home = new URL(url);
+        if (!validId(id) || typeof title !== "string" || home.origin !== entry.origin
+            || home.username || home.password || home.search || home.hash
+            || !/^\/groups\/[a-zA-Z0-9_.-]+$/.test(home.pathname)) throw new Error("Invalid guild");
+        return { id, title, url: home.href };
+      };
+      if (input.operation === "list") return { guilds: result.guilds.map(publicGuild) };
+      if (input.operation === "link") return { guild: publicGuild(result.guild) };
+      if (!Array.isArray(result.members) || result.members.length > 30
+          || (result.next !== null && !validId(result.next))) throw new Error("Invalid guild roster");
+      return { members: result.members.map(({ id, username }) => {
+        if (!validId(id) || typeof username !== "string" || !username || username.length > 160) {
+          throw new Error("Invalid guild member");
+        }
+        return { id, username };
+      }), next: result.next };
+    } catch {
+      return { error: "guild_unavailable" };
+    }
+  }
   function dispose() {
     pending?.abort();
     pending = null;
     access = null;
   }
-  return { state: () => state, start, cancel, refresh, signOut, searchMembers, dispose };
+  return { state: () => state, start, cancel, refresh, signOut, searchMembers, ourGuild, dispose };
 }
 
 module.exports = { createNetTwinLogin };

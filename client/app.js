@@ -25,6 +25,106 @@ const memberErrors = {
 };
 let memberSearchAttempt = 0;
 let memberAccount = null;
+const guildModal = document.getElementById("guildModal");
+const guildForm = document.getElementById("guildLinkForm");
+const guildInput = document.getElementById("guildUrl");
+const guildStatus = document.getElementById("guildStatus");
+const guildChoices = document.getElementById("guildChoices");
+const guildRoster = document.getElementById("guildRoster");
+const guildTitle = document.getElementById("guildTitle");
+const guildHome = document.getElementById("guildHome");
+const guildMembers = document.getElementById("guildMembers");
+const guildMore = document.getElementById("guildMore");
+const guildRefresh = document.getElementById("guildRefresh");
+let guildRequest = 0;
+let selectedGuild = null;
+let guildCursor = null;
+const guildErrors = {
+  unauthorized: "Sign in with Net-Twin in Settings to view your guild.",
+  invalid_guild_home: "Enter the link to a Net-Twin group you manage.",
+  guild_manager_required: "You need to be a group admin on Net-Twin to link this group.",
+  guild_membership_required: "You no longer have access to this guild.",
+  slow_down: "Too many requests. Try again in a minute.",
+  guild_unavailable: "Our Guild is currently unavailable."
+};
+
+async function requestGuild(input) {
+  const request = ++guildRequest;
+  const result = await window.fanVaultOverlay.ourGuild(input).catch(() => ({ error: "guild_unavailable" }));
+  if (request !== guildRequest) return undefined;
+  if (result.error) {
+    guildStatus.textContent = guildErrors[result.error] || guildErrors.guild_unavailable;
+    return null;
+  }
+  return result;
+}
+
+async function loadGuildMembers(guild, append = false) {
+  selectedGuild = guild;
+  guildMore.classList.add("hidden");
+  if (!append) {
+    guildMembers.replaceChildren();
+    guildRoster.classList.add("hidden");
+  }
+  const result = await requestGuild({ operation: "members", group_id: guild.id, after: append ? guildCursor : "0" });
+  if (!result) {
+    if (result === null && selectedGuild === guild) guildRoster.classList.add("hidden");
+    return;
+  }
+  guildStatus.textContent = "";
+  guildTitle.textContent = guild.title;
+  guildHome.href = guild.url;
+  guildRoster.classList.remove("hidden");
+  for (const member of result.members) {
+    const item = document.createElement("li");
+    item.textContent = "@" + member.username;
+    guildMembers.append(item);
+  }
+  guildCursor = result.next;
+  guildMore.classList.toggle("hidden", !guildCursor);
+}
+
+async function loadGuilds(preferredId = selectedGuild?.id) {
+  guildChoices.replaceChildren();
+  guildRoster.classList.add("hidden");
+  if (!memberAccount) {
+    guildStatus.textContent = guildErrors.unauthorized;
+    return;
+  }
+  guildStatus.textContent = "Loading guilds…";
+  const result = await requestGuild({ operation: "list" });
+  if (!result) return;
+  const guilds = result.guilds;
+  guildStatus.textContent = guilds.length ? "" : "Your linked Net-Twin groups will appear here.";
+  for (const guild of guilds) {
+    const choice = document.createElement("button");
+    choice.type = "button";
+    choice.className = "menu-action";
+    choice.textContent = guild.title;
+    choice.addEventListener("click", () => { void loadGuildMembers(guild); });
+    guildChoices.append(choice);
+  }
+  const selected = guilds.find(guild => guild.id === preferredId) || guilds[0];
+  if (selected) await loadGuildMembers(selected);
+}
+
+guildForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const submit = guildForm.querySelector("button");
+  submit.disabled = true;
+  try {
+    const result = await requestGuild({ operation: "link", url: guildInput.value.trim() });
+    if (!result) return;
+    guildForm.reset();
+    guildForm.classList.add("hidden");
+    await loadGuilds(result.guild.id);
+  } finally {
+    submit.disabled = false;
+  }
+});
+guildRefresh.addEventListener("click", () => { void loadGuilds(); });
+guildMore.addEventListener("click", () => { if (selectedGuild && guildCursor) void loadGuildMembers(selectedGuild, true); });
+
 memberSearch.hidden = Boolean(ws);
 document.getElementById("demoMembers").hidden = !ws;
 memberForm.addEventListener("submit", async (event) => {
@@ -78,6 +178,18 @@ function displayLogin(state) {
     memberSubmit.disabled = false;
     memberResults.replaceChildren();
     memberStatus.textContent = account ? "" : memberErrors.unauthorized;
+    guildRequest++;
+    selectedGuild = null;
+    guildCursor = null;
+    guildForm.reset();
+    guildForm.classList.add("hidden");
+    guildRefresh.classList.toggle("hidden", !account);
+    guildChoices.replaceChildren();
+    guildMembers.replaceChildren();
+    guildHome.removeAttribute("href");
+    guildRoster.classList.add("hidden");
+    guildStatus.textContent = account ? "" : guildErrors.unauthorized;
+    if (account && !guildModal.classList.contains("hidden")) void loadGuilds();
   }
 }
 const loginActions = { startLogin: loginStart, cancelLogin: loginCancel, refreshLogin: loginRefresh, signOut: loginSignOut };
@@ -378,6 +490,12 @@ document.querySelectorAll("[data-action]").forEach((button) => {
     if (action === "exit-app") {
       closeAllModals();
       window.fanVaultOverlay?.requestQuit();
+      return;
+    }
+    if (action === "open-guild" || action === "setup-guild") {
+      openModal("guildModal");
+      guildForm.classList.toggle("hidden", action !== "setup-guild" || !memberAccount);
+      void loadGuilds();
       return;
     }
     const modalId = modalMap[action];
