@@ -11,5 +11,7 @@ return [
     'pilot_users' => [],
     // Map each game and platform to its dedicated searchable Sngine textbox field ID.
     // Keep empty until the Net-Twin field mappings and visibility have been reviewed.
-    'member_search_fields' => []
+    'member_search_fields' => [],
+    // Serve the website form to eligible, signed-in Net-Twin users.
+    'web_member_search_enabled' => false
 ];

@@ -15,9 +15,11 @@ try {
     $origin = $config['origin'];
     $rateKey = $config['rate_key'];
     $pilotUsers = $config['pilot_users'] ?? [];
+    $action = $_GET['action'] ?? '';
+    $webSearch = $action === 'players';
     if (!is_string($origin) || !preg_match('#^https://[a-z0-9.-]+(?::[0-9]+)?$#D', $origin)
         || !is_string($rateKey) || !preg_match('/^[a-f0-9]{64}$/D', $rateKey)
-        || !is_array($pilotUsers) || $pilotUsers === []
+        || (!$webSearch && (!is_array($pilotUsers) || $pilotUsers === []))
         || !in_array(strtolower($_SERVER['HTTPS'] ?? ''), ['on', '1'], true)
         || strtolower($_SERVER['HTTP_HOST'] ?? '') !== substr($origin, 8)) {
         throw new RuntimeException('Invalid HTTPS or server configuration');
@@ -26,10 +28,10 @@ try {
     require $private . '/NetTwinIdentity.php';
     require $private . '/AuthHttp.php';
     foreach (\FanVault\AuthHttp::headers() as $key => $value) header($key . ': ' . $value);
-    $action = $_GET['action'] ?? '';
     $method = $_SERVER['REQUEST_METHOD'] ?? '';
     $requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if (!is_string($action) || !in_array($action, ['approve', 'device', 'exchange', 'me', 'logout', 'member-search'], true)) {
+    if (!in_array($action, ['approve', 'device', 'exchange', 'me', 'logout', 'member-search', 'players'], true)
+        || ($webSearch && ($config['web_member_search_enabled'] ?? false) !== true)) {
         http_response_code(404);
         exit;
     }
@@ -48,12 +50,13 @@ try {
     ini_set('display_errors', '0');
     if (!defined('SYS_VER') || SYS_VER !== '5.0') throw new RuntimeException('Sngine version not verified');
     foreach (\FanVault\AuthHttp::headers() as $key => $value) header($key . ': ' . $value);
-    $identity = \FanVault\NetTwinIdentity::fromSngine($db, $system, $pilotUsers);
-    $browser = $action === 'approve' ? $identity->browser($user, $_COOKIE) : null;
+    $identity = \FanVault\NetTwinIdentity::fromSngine($db, $system, $webSearch ? null : $pilotUsers);
+    $browser = $webSearch || $action === 'approve' ? $identity->browser($user, $_COOKIE) : null;
     $csrf = '';
     if ($browser !== null && session_status() === PHP_SESSION_ACTIVE) {
         if (!isset($_SESSION['fanvault_csrf'])) $_SESSION['fanvault_csrf'] = bin2hex(random_bytes(32));
-        $csrf = hash_hmac('sha256', $browser['session_ref'], $_SESSION['fanvault_csrf']);
+        $csrfInput = $webSearch ? 'players:' . $browser['session_ref'] : $browser['session_ref'];
+        $csrf = hash_hmac('sha256', $csrfInput, $_SESSION['fanvault_csrf']);
     }
     if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
     $state = $private . '/sessions.sqlite';
@@ -65,17 +68,22 @@ try {
         umask($mask);
     }
     $auth = new \FanVault\DeviceAuthorization($pdo, $identity->isActive(...));
-    $members = null;
-    if ($action === 'member-search' && !empty($config['member_search_fields'])) {
-        require $private . '/MemberSearch.php';
-        $members = \FanVault\MemberSearch::fromSngine($db, $system, $config['member_search_fields']);
-    }
-    $http = new \FanVault\AuthHttp($auth, $identity, $origin, $members);
     $client = hash_hmac('sha256', $_SERVER['REMOTE_ADDR'] ?? 'unknown', $rateKey);
-    [$status, $type, $body] = $http->handle($method, $action, $requestOrigin,
-        $_SERVER['CONTENT_TYPE'] ?? '', file_get_contents('php://input', false, null, 0, 1025) ?: '',
-        $_POST, $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '',
-        $client, $browser, $csrf, ($user->_logged_in ?? false) === true);
+    $members = null;
+    if ($webSearch || ($action === 'member-search' && !empty($config['member_search_fields']))) {
+        require $private . '/MemberSearch.php';
+        $members = \FanVault\MemberSearch::fromSngine($db, $system, $config['member_search_fields'] ?? []);
+    }
+    if ($webSearch) {
+        require $private . '/WebMemberSearch.php';
+        [$status, $type, $body] = (new \FanVault\WebMemberSearch($members, $auth))->handle($method, $_POST, $browser, $csrf, $client);
+    } else {
+        $http = new \FanVault\AuthHttp($auth, $identity, $origin, $members);
+        [$status, $type, $body] = $http->handle($method, $action, $requestOrigin,
+            $_SERVER['CONTENT_TYPE'] ?? '', file_get_contents('php://input', false, null, 0, 1025) ?: '',
+            $_POST, $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '',
+            $client, $browser, $csrf, ($user->_logged_in ?? false) === true);
+    }
     http_response_code($status);
     header('Content-Type: ' . $type);
     echo $body;

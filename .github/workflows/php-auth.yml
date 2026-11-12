@@ -38,6 +38,8 @@ jobs:
           php -l server/php/tests/browser-fixture.php
           php -l server/php/NetTwinIdentity.php
           php -l server/php/AuthHttp.php
+          php -l server/php/WebMemberSearch.php
           php -l server/php/public/index.php
+          php -l server/php/public/players.php
       - name: Test browser authorization over loopback
         run: node --test server/php/tests/browser-flow.test.js
