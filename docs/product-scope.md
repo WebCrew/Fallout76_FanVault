@@ -1,6 +1,6 @@
 # FanVault — verbindlicher Funktionsumfang
 
-Festgehalten am 31. Oktober 2026 nach der Zusammenfassung des Projektinhabers. Dieses Dokument beschreibt das Zielprodukt, nicht den Fertigstellungsstand des aktuellen Prototyps. Es ersetzt weitergehende frühere Ideen für den notwendigen ersten Funktionsumfang.
+Festgehalten am 31. Oktober 2026 und um den vereinbarten Gildenablauf vom 11. November 2026 ergänzt. Dieses Dokument beschreibt das Zielprodukt.
 
 ## Konto und Spielersuche
 
@@ -10,18 +10,26 @@ Festgehalten am 31. Oktober 2026 nach der Zusammenfassung des Projektinhabers. D
 - Mitspieler werden anhand ihres dort angegebenen Gamertags gesucht, auf Net-Twin und aus der App über dieselbe erlaubte Datenquelle. Das Windows-Overlay verwendet für Fallout 76 das eigene PC-Profilfeld „Fallout76 Gamer Tag“.
 - Gamertags sind selbst angegeben und werden nicht als verifizierte Spielkonten dargestellt. Sichtbarkeitsregeln sind vor Freischaltung der Suche noch festzulegen.
 
-## Gilde, Freunde und Vierergruppen
+## Our Guild
 
-- Ein Gildenadministrator kann gefundene Mitspieler einladen und eine Gilde aus Freunden aufbauen.
+- Jede Gilde bekommt in FanVault eine Seite namens **Our Guild**. Ihre Leitung kann einen Avatar und ein Headerbild hochladen, Social Links pflegen und die Tagesansage jederzeit ändern.
+- **Our Guild Home** ist ein gut sichtbarer Link unter dem Header. Die Gildenleitung hinterlegt dort die Adresse einer Net-Twin-Gruppe oder -Seite. FanVault prüft die Zieladresse und akzeptiert dafür Net-Twin-Gruppen und -Seiten.
+- Die Einstellung **„Ich leite eine Gilde“** öffnet die Einrichtung. FanVault prüft auf dem Server, ob das Konto Inhaber oder Admin des verknüpften Zuhauses ist. Bearbeitungsrechte gelten für diese Gilde und enden, wenn die entsprechende Rolle auf Net-Twin entfällt.
+- Die Leitung sucht Mitspieler auf Net-Twin und lädt gezielt die gewünschten Personen ein. Bei Gruppen übernimmt FanVault bestätigte Gruppenmitglieder automatisch. Bei Seiten führt die Leitung auf Net-Twin eine ausdrückliche Gildenliste. FanVault übernimmt daraus die bestätigten Mitglieder. Seiten-Follows und offene Einladungen zählen bei der Übernahme nicht mit.
+- Net-Twin ist die Quelle der Gildenliste. FanVault übernimmt Beitritte, Austritte und entfernte Mitglieder automatisch. Bei einem Ausfall der Synchronisierung prüft FanVault die Zugriffsrechte, bevor es geschützte Gildenfunktionen freigibt.
+- Ein gewöhnliches Gildenmitglied nutzt sein vorhandenes Net-Twin-Konto und seinen hinterlegten Fallout-76-Gamertag. Die [Schritt-für-Schritt-Anleitung](guild-leader-guide.md) erklärt die Einrichtung und den Beitritt.
+
+## Freunde und Vierergruppen
+
 - Eine Gilde ist nicht auf vier Mitglieder begrenzt. Die Grenze gilt für die einzelne Spiel-/Chatgruppe.
 - Auch normale registrierte Spieler können Freunde suchen und in eine Vierergruppe einladen; dafür müssen sie kein Gildenadministrator sein.
 - Jede Gruppe hat höchstens vier Teilnehmer **einschließlich des Einladenden**. Einladungen und die Annahme müssen den Platz atomar prüfen; die Oberfläche allein erzwingt diese Grenze nicht.
 - Mehrere Vierergruppen innerhalb einer größeren Gilde sind möglich. Gildenrechte, Gruppenteilnahme und globale Administratorrechte sind getrennte Berechtigungen.
-- Eine eigene Net-Twin-Seite oder -Gruppe ist als Gildenpräsenz optional; normale App-Nutzung verlangt deren Erstellung nicht.
 
 ## Textchat, Tutorials und Dateien
 
-- Gruppenmitglieder können gemeinsam Textnachrichten austauschen. Vorhandenen Net-Twin-/Sngine-Textchat und dessen Speicherung wiederverwenden, soweit seine Rechte und Funktionen passen.
+- Für ein **Our Guild Home** vom Typ Net-Twin-Gruppe nutzen das FanVault-Overlay und die Chatbox der Gruppe dieselbe Sngine-Unterhaltung. Textnachrichten erscheinen in beiden Richtungen im gemeinsamen Verlauf. FanVault prüft beim Lesen und Schreiben die bestätigte Gruppenmitgliedschaft.
+- Der erste Chat-Test umfasst Text in beide Richtungen und die Zugriffssperre nach einem Austritt. Ein gemeinsamer Gildenchat für ein **Our Guild Home** vom Typ Net-Twin-Seite braucht eine eigene Anbindung.
 - Tutorials werden ausschließlich als Chatbeiträge geteilt, zum Beispiel als Text, Bild oder Link. Kein separates Tutorial-Modul, Kursbereich oder redaktionelles Veröffentlichungssystem.
 - Bilder und andere ausdrücklich erlaubte Dateien werden ausschließlich als Chat-Anhänge hochgeladen und geteilt. Keine eigenständige Dateibibliothek, Galerie oder allgemeine Upload-Seite.
 - Echte Anhänge müssen den berechtigten Teilnehmern zugänglich sein und nach einem Neustart wieder im Verlauf erscheinen. Eine lokale Bildvorschau allein erfüllt diese Funktion nicht.
@@ -30,7 +38,7 @@ Festgehalten am 31. Oktober 2026 nach der Zusammenfassung des Projektinhabers. D
 
 ## Sprachraum
 
-- Optionaler gemeinsamer Sprachraum je Vierergruppe, selbstständig beitreten/verlassen, ohne Klingeln oder Einzelanrufannahme.
+- Optionaler gemeinsamer Sprachraum je Vierergruppe ausschließlich in FanVault. Teilnehmer können dem Raum selbstständig beitreten und ihn wieder verlassen.
 - Direkte WebRTC-Audioverbindungen zwischen den PCs, Mikrofon-Stummschaltung und Push-to-Talk.
 - Kein eigener Sprachserver und kein zusätzlicher kostenpflichtiger Audiodienst. Shared Hosting übernimmt nur Anmeldung, Rechte, Räume und Verbindungsanbahnung.
 - Ohne Weiterleitungsserver können direkte Verbindungen bei einzelnen Netzwerken scheitern; das muss im Test geprüft und in der App ehrlich angezeigt werden.
@@ -53,6 +61,6 @@ Festgehalten am 31. Oktober 2026 nach der Zusammenfassung des Projektinhabers. D
 
 ## Abnahme und aktuelle Grenze
 
-Fertig bedeutet: Mit echten vorgesehenen Testkonten anmelden, nach Gamertag suchen, Einladung annehmen, Profile ändern/anzeigen, eine Gruppe mit maximal vier Personen nutzen, Text und erlaubte Anhänge austauschen, Sprachraum prüfen und das Overlay im Spiel passend platzieren. Unberechtigte Nutzer und ein fünfter Teilnehmer müssen abgewiesen werden.
+Zur Abnahme gehören Anmeldung und Suche mit echten Testkonten, eine verknüpfte Gilde mit bearbeitbarer **Our Guild**-Seite sowie die automatische Übernahme eines bestätigten Beitritts und eines Austritts. Danach folgen der Einladungsablauf für Vierergruppen, Profilbearbeitung, Textchat und Anhänge, Sprachraum und Overlay im Spiel. Tests prüfen auch den Zugriff fremder oder ausgetretener Konten und die Grenze von vier Personen je Spielgruppe.
 
-Der aktuelle Step-8-Kandidat bietet weiterhin eine lokale Demo und Vorbereitung für Sngine 5.0. Echte Anmeldung, Suche, Einladungen, bearbeitbare Profile, entfernte Chat-/Dateiübertragung und Sprachräume sind noch nicht fertig. Dieses Dokument ergänzt die Planung; es schaltet keine Demo-Schaltfläche zu einer echten Funktion um.
+Net-Twin-Anmeldung und Gamertag-Suche wurden im Windows-Pilot getestet. **Our Guild**, Rollenprüfung und Mitgliedersynchronisierung sind der nächste Gilden-Meilenstein. Die übrigen Funktionen werden separat abgenommen.
