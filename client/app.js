@@ -77,7 +77,29 @@ async function loadGuildMembers(guild, append = false) {
   guildRoster.classList.remove("hidden");
   for (const member of result.members) {
     const item = document.createElement("li");
-    item.textContent = "@" + member.username;
+    item.className = "guild-member";
+    const name = document.createElement("span");
+    name.className = "guild-member-name";
+    name.textContent = "@" + member.username;
+    const actions = document.createElement("span");
+    actions.className = "guild-member-actions";
+    const profile = document.createElement("a");
+    profile.className = "member-icon";
+    profile.href = "https://net-twin.de/" + encodeURIComponent(member.username);
+    profile.target = "_blank";
+    profile.rel = "noopener";
+    profile.title = "Open Net-Twin profile";
+    profile.setAttribute("aria-label", `Open Net-Twin profile for @${member.username}`);
+    profile.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>';
+    const invite = document.createElement("button");
+    invite.type = "button";
+    invite.className = "member-icon";
+    invite.disabled = true;
+    invite.title = "Squad invitations are not available yet";
+    invite.setAttribute("aria-label", `Invite @${member.username} to a squad (coming soon)`);
+    invite.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21v-2a7 7 0 0 1 11-6m5-1v8m-4-4h8"/></svg>';
+    actions.append(profile, invite);
+    item.append(name, actions);
     guildMembers.append(item);
   }
   guildCursor = result.next;
@@ -234,7 +256,7 @@ const channelMessages = ws ? structuredClone(runtimeConfig.game.demoMessages) : 
 const dmMessages = {};
 const modalMap = {
   "open-voice": "voiceModal",
-  "open-members": "membersModal",
+  "find-players": "playerSearchModal",
   "open-menu": "menuModal",
   "open-settings": "settingsModal",
   "open-profile-from-menu": "profileModal"
@@ -492,7 +514,12 @@ document.querySelectorAll("[data-action]").forEach((button) => {
       window.fanVaultOverlay?.requestQuit();
       return;
     }
-    if (action === "open-guild" || action === "setup-guild") {
+    if (action === "open-members" || action === "open-guild" || action === "setup-guild") {
+      const membersView = action === "open-members";
+      document.getElementById("guildHeading").textContent = membersView ? "Members" : "Our Guild";
+      document.getElementById("guildMemberActions").classList.toggle("hidden", !membersView);
+      guildHome.classList.toggle("hidden", membersView);
+      guildRefresh.textContent = membersView ? "Refresh members" : "Refresh guilds";
       openModal("guildModal");
       guildForm.classList.toggle("hidden", action !== "setup-guild" || !memberAccount);
       void loadGuilds();
