@@ -160,10 +160,10 @@
     </div>
   </section>
 
-  <section class="modal hidden" id="membersModal" aria-label="Members">
+  <section class="modal hidden" id="playerSearchModal" aria-label="Member Search">
     <button class="modal-close" data-close>&times;</button>
     <div class="popup-card">
-      <h2>Members</h2>
+      <h2>Member Search</h2>
       <div id="memberSearch" class="settings-list" hidden>
         <form id="memberSearchForm" class="settings-list" hidden>
           <label for="memberGamertag">Full Fallout 76 gamertag (PC)</label>
@@ -173,20 +173,20 @@
         <p id="memberSearchStatus" role="status"></p>
         <ul id="memberSearchResults" class="simple-links"></ul>
       </div>
-      <div id="demoMembers" class="member-list">
+    </div>
+  </section>
+
+  <section class="modal hidden" id="guildModal" aria-labelledby="guildHeading">
+    <button class="modal-close" data-close aria-label="Close">&times;</button>
+    <div class="popup-card">
+      <h2 id="guildHeading">Our Guild</h2>
+      <div id="demoMembers" class="member-list" hidden>
         <div class="member-row"><span>RangerOne</span><span class="member-state online">Online</span></div>
         <div class="member-row"><span>AshMara</span><span class="member-state idle">Idle</span></div>
         <div class="member-row"><span>MothSix</span><span class="member-state online">Online</span></div>
         <div class="member-row"><span>HollowFox</span><span class="member-state offline">Offline</span></div>
         <div class="member-row"><span>VaultAnne</span><span class="member-state online">Online</span></div>
       </div>
-    </div>
-  </section>
-
-  <section class="modal hidden" id="guildModal" aria-label="Our Guild">
-    <button class="modal-close" data-close aria-label="Close">&times;</button>
-    <div class="popup-card">
-      <h2>Our Guild</h2>
       <div class="settings-list">
         <form id="guildLinkForm" class="settings-list hidden">
           <label for="guildUrl">Net-Twin group link</label>
@@ -202,6 +202,10 @@
           <button id="guildMore" class="menu-action hidden">Show more members</button>
         </div>
         <button id="guildRefresh" class="menu-action hidden">Refresh guilds</button>
+        <div id="guildMemberActions" class="settings-list hidden">
+          <button class="menu-action" data-action="find-players">Member Search</button>
+          <button class="menu-action" data-action="open-guild">Our Guild</button>
+        </div>
       </div>
     </div>
   </section>
@@ -214,6 +218,7 @@
         <button class="menu-action" data-action="open-profile-from-menu">Profile</button>
         <button class="menu-action" data-action="open-settings">Settings</button>
         <button class="menu-action" data-action="open-members">Members</button>
+        <button class="menu-action" data-action="find-players">Member Search</button>
         <button class="menu-action" data-action="open-guild">Our Guild</button>
         <button class="menu-action menu-action-danger" data-action="exit-app">Exit FanVault</button>
       </div>
@@ -233,7 +238,9 @@
           <button class="menu-action" id="loginRefresh" hidden>Check session</button>
           <button class="menu-action" id="loginSignOut" hidden>Sign out of FanVault</button>
         </section>
-        <button class="menu-action" data-action="setup-guild">I lead a guild</button>
+        <button class="menu-action" data-action="setup-guild">Guild Leader Setup</button>
+        <button class="menu-action" data-action="open-members">Members</button>
+        <button class="menu-action" data-action="find-players">Member Search</button>
         <div class="setting-row"><span>Hotkey</span><strong>Ctrl + Shift + F</strong></div>
         <div class="setting-row"><span>Interaction</span><strong>Not implemented</strong></div>
         <div class="setting-row"><span>Exit</span><strong>Ctrl + Shift + Q</strong></div>

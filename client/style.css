@@ -387,6 +387,13 @@ button {
 .tag { padding: 7px 10px; border-radius: 999px; background: rgba(134, 178, 126, 0.16); font-size: 12px; }
 .simple-links { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
 .simple-links li { padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 10px; }
+.guild-member { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.guild-member-name { min-width: 0; overflow-wrap: anywhere; }
+.guild-member-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.member-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 6px; border-radius: 8px; color: var(--text); background: rgba(255,255,255,0.06); }
+.member-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.member-icon:disabled { opacity: 0.4; cursor: not-allowed; }
+.member-icon:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
 .voice-block,
 .member-row,
